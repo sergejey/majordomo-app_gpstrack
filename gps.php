@@ -140,7 +140,13 @@ if (isset($_REQUEST['latitude']))
       
       SQLUpdate('gpsdevices', $device);
    }
-
+	
+   include_once("./modules/app_gpstrack/app_gpstrack.class.php");
+   $gpstrack = new app_gpstrack();
+   $gpstrack->getConfig();
+   $max_accuracy = $gpstrack->config['MAX_ACCURACY'];
+   unset($gpstrack);
+   
    $rec = array();
    
    //$rec['ADDED']     = ($time) ? $time : date('Y-m-d H:i:s');
@@ -155,6 +161,12 @@ if (isset($_REQUEST['latitude']))
    $rec['DEVICEID']  = $_REQUEST['deviceid'];
    $rec['ACCURACY']  = isset($_REQUEST['accuracy']) ? $_REQUEST['accuracy'] : 0;
 
+   if (($max_accuracy != 0) && ($rec['ACCURACY'] > $max_accuracy)) {
+	    //DebMes("GPS Accuracy {$rec['ACCURACY']} > {$max_accuracy} exiting!");
+		$db->Disconnect();
+		exit;
+   }
+   
    if ($device['ID'])
       $rec['DEVICE_ID'] = $device['ID'];
    

@@ -161,7 +161,12 @@
   [#else#]
    &nbsp;
   [#endif#]
-  <a href="http://maps.googleapis.com/maps/api/staticmap?center=[#LAT#],[#LON#]&size=512x512&maptype=hybrid&sensor=false&zoom=14&markers=[#LAT#],[#LON#]" target=_blank><#LANG_MAP#></a>
+  [#if "<#MAPPROVIDER#>"=="google"#]
+  <a href="http://maps.googleapis.com/maps/api/staticmap?center=[#LAT#],[#LON#]&size=512x512&maptype=hybrid&sensor=false&zoom=16&markers=[#LAT#],[#LON#]" target=_blank><#LANG_MAP#></a>
+  [#endif MAPPROVIDER#]
+  [#if "<#MAPPROVIDER#>"=="yandex"#]
+  <a href="https://static-maps.yandex.ru/1.x/?l=sat,skl&ll=[#LON#],[#LAT#]&pt=[#LON#],[#LAT#]&size=450,450&z=16" target=_blank><#LANG_MAP#></a>
+  [#endif MAPPROVIDER#]
  </td>
 [#endif IS_SET_LOCATION_ID#]
  <td bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]">
