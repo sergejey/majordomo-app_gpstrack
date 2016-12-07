@@ -144,6 +144,23 @@ function run() {
 * @access public
 */
 function admin(&$out) {
+ $this->getConfig();
+ $out['MAPPROVIDER'] = $this->config['MAPPROVIDER'];
+ $out['MAPTYPE'] = $this->config['MAPTYPE'];
+ $out['MAX_ACCURACY'] = $this->config['MAX_ACCURACY'];
+ if ($this->view_mode=='update_settings') {
+   global $mapprovider;
+   $this->config['MAPPROVIDER']=$mapprovider;
+   global $maptype;
+   $this->config['MAPTYPE']=$maptype;
+   global $max_accuracy;
+   $this->config['MAX_ACCURACY']=$max_accuracy;
+   $this->saveConfig();
+   $this->redirect("?data_source=gpsoptions&ok=1");
+ }
+ if ($_GET['ok']) {
+  $out['OK']=1;
+ }
  if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
   $out['SET_DATASOURCE']=1;
  }
@@ -213,6 +230,10 @@ function admin(&$out) {
 * @access public
 */
 function usual(&$out) {
+ $this->getConfig();
+ $out['MAPPROVIDER'] = $this->config['MAPPROVIDER'];
+ $out['MAPTYPE'] = $this->config['MAPTYPE'];
+ $out['MAX_ACCURACY'] = $this->config['MAX_ACCURACY'];
  require(DIR_MODULES.$this->name.'/usual.inc.php');
 }
 /**

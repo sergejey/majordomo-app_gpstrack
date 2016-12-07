@@ -1,0 +1,295 @@
+<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=true"></script>
+<!--<script type="text/javascript" src="<#ROOTHTML#>js/gmaps.js"></script>-->
+
+<script type="text/javascript" language="javascript">
+
+var updateTimeOut;
+
+function resizeMap() {
+ $('#map').css({'height':(($(document).height())-40)+'px', 'width':'100%'});
+ return false;
+}
+
+function checkMarkerExists(temp_id) {
+  for (var i=0, marker; marker=map.markers[i]; i++){
+   if (marker.temp_id==temp_id) return true;
+  }
+  return false;
+}
+
+function getMarkerIndex(temp_id) {
+  for (var i=0, marker; marker=map.markers[i]; i++){
+   if (marker.temp_id==temp_id) return i;
+  }
+ return false;
+}
+
+function updateLocations() {
+ var url="?";
+ url+='&ajax=1&op=getlocations';
+
+ $.ajax({
+   url: url
+  }).done(function(data) { 
+   var obj=jQuery.parseJSON(data);
+   if (obj.LOCATIONS.length>0) {
+      var locations=obj.LOCATIONS;
+      var locationsLength = locations.length;
+
+      for(var i = 0; i < locationsLength; i++)
+      {
+         var location = locations[i];
+         var temp_id  = location.ID;
+		 var myLatLng = {lat: parseFloat(location.LAT), lng: parseFloat(location.LON)};
+		 var myCircle = new google.maps.Circle({
+			temp_id: temp_id,
+			center: myLatLng,
+			radius: parseFloat(location.RANGE),
+			map: map,
+			title: location.TITLE,
+			strokeColor: '#0000FF',
+			strokeOpacity: 0.8,
+			strokeWeight: 2,
+			fillColor: '#0000FF',
+			fillOpacity: 0.35,
+		 });	 
+      }
+   }
+  });
+
+
+return false;
+}
+
+function zoomToObject(obj){
+    var bounds = new google.maps.LatLngBounds();
+    var points = obj.getPath().getArray();
+    for (var n = 0; n < points.length ; n++){
+        bounds.extend(points[n]);
+    }
+    map.fitBounds(bounds);
+}
+
+function updateRoute(device_id, color) {
+ var url="?";
+ url+='&ajax=1&op=getroute&period=[#PERIOD#]&from=[#FROM#]&to=[#TO#]&device_id='+device_id;
+
+ $.ajax({
+   url: url
+  }).done(function(data) { 
+   var obj=jQuery.parseJSON(data);
+   if (obj.PATH.length>0) {
+
+
+    var path=obj.PATH;
+    var points=obj.POINTS;
+    var pathCoordinates = new Array();
+	path.forEach(function (item, i, arr) {
+		var myLatLng = {lat: parseFloat(path[i][0]), lng: parseFloat(path[i][1])};
+		pathCoordinates.push(myLatLng);
+	} );
+	var myPath = new google.maps.Polyline({
+		path: pathCoordinates,
+		geodesic: true,
+		strokeColor: color,
+		strokeOpacity: 0.3,
+		strokeWeight: 4
+	});
+	myPath.setMap(map);
+	map.polylines.push(myPath);
+    zoomToObject(myPath);
+   }
+  });
+ return false;
+}
+
+
+function updateMarkers() {
+ var url="?";
+ url+='&ajax=1&op=getmarkers';
+ $.ajax({
+   url: url
+  }).done(function(data) { 
+	var obj=jQuery.parseJSON(data);
+	var markers=obj.MARKERS;
+	var markersCnt = markers.length;
+   
+	for(var i=0;i<markersCnt;i++) {
+		var marker=markers[i];
+		var temp_id=marker.ID;
+			if (!checkMarkerExists(temp_id)) {
+				var myLatLng = {lat: parseFloat(marker.LAT), lng: parseFloat(marker.LON)};
+				var mapMarker = new google.maps.Marker({
+					temp_id: temp_id,
+					icon: 'http://labs.google.com/ridefinder/images/mm_20_'+marker.COLOR+'.png',
+					position: myLatLng,
+					map: map,
+					title: marker.NAME,
+					infoWindow: {
+						content: marker.HTML
+					}
+				});
+				map.markers.push(mapMarker);
+			} else {
+				mk=getMarkerIndex(temp_id);
+				var marker_obj=map.markers[mk];
+				var lat = parseFloat(marker.LAT);
+				var lng = parseFloat(marker.LON);
+				var oldLatLng = marker_obj.getPosition();
+				var newLatLng = new google.maps.LatLng(lat, lng);
+				marker_obj.setPosition(newLatLng);
+				if ((oldLatLng.lng()!=newLatLng.lng()) || (oldLatLng.lat()!=newLatLng.lat())) {
+					// marker moved
+					map.setCenter(newLatLng.lat(), newLatLng.lng());
+				}
+			}
+   }
+   updateTimeOut=setTimeout('updateMarkers();', 3000);
+
+  });
+ return false;
+}
+
+    var map;
+
+    [#if LATEST_LAT!=""#]
+    var startLat=[#LATEST_LAT#];
+    [#else#]
+    var startLat=53.901506;
+    [#endif#]
+
+    [#if LATEST_LON!=""#]
+    var startLon=[#LATEST_LON#];
+    [#else#]
+    var startLon=27.565269;
+    [#endif#]
+    
+    $(document).ready(function(){
+		
+	var myLatlng = new google.maps.LatLng(startLat,startLon);
+	var mapOptions = {
+		zoom: 16,
+		center: myLatlng
+		//,disableDefaultUI: true
+		[#if MAPTYPE="map"#]
+        , mapType: 'roadmap'
+        [#endif#]
+        [#if MAPTYPE="satellite"#]
+        , mapType: 'satellite'
+        [#endif#]
+        [#if MAPTYPE="hybrid"#]
+        , mapType: 'hybrid'
+        [#endif#]
+	}
+	
+	map = new google.maps.Map(document.getElementById('map'), mapOptions);
+	map.markers = new Array();
+	map.polylines = new Array();
+
+	[#if LATEST_LAT=""#]
+	// HTML5 геолокация
+	if (navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(function(position) {
+			var pos = {
+				lat: position.coords.latitude,
+				lng: position.coords.longitude
+			};
+
+			map.setCenter(pos);
+		}, function() {
+			// ошибка геолокации
+		});
+	} else { /* Браузер не поддерживает геолокацию */ }
+	[#endif#]
+
+	updateMarkers();
+	resizeMap();
+
+	[#begin DEVICES#]
+	updateRoute([#ID#], '[#COLOR#]');
+	[#end DEVICES#]
+	updateLocations();
+    });
+
+
+function legendClicked(id, color) {
+ for (var i=0, marker; marker=map.markers[i]; i++){
+   marker.setMap(null);
+  }
+ map.markers = [];
+ updateMarkers();
+ for (var j=0, polyline; polyline=map.polylines[j]; j++){
+   polyline.setMap(null);
+  }
+ map.polylines = [];
+ updateRoute(id, color);
+ return false;
+}
+
+</script>
+
+<div id="add_controls">
+<table border="0" cellspacing=3 cellpadding=3>
+ <tr>
+ [#begin DEVICES#]
+  <td>
+  <img src="http://labs.google.com/ridefinder/images/mm_20_[#COLOR#].png" border="0">
+  </td>
+  <td>
+  <a href="#" onClick="return legendClicked([#ID#], '[#COLOR#]');" class="btn btn-sm">[#NAME#] ([#TITLE#])</a>
+  <!--#
+  [#if LATEST_LAT!=""#]map.setCenter([#LATEST_LAT#], [#LATEST_LON#]);[#endif#]
+  #-->
+  </td>
+ [#end DEVICES#]
+ <form action="?" method="get">
+ <td>
+ <script language="javascript">
+  function periodUpdated() {
+   if ($('#selPeriod').val()=='custom') {
+    $('#customDates').show();
+   } else {
+    $('#customDates').hide();
+   }
+   return false;
+  }
+ </script>
+ <#LANG_PERIOD#>:
+ </td>
+ <td>
+ <select name="period" onChange='periodUpdated();' id='selPeriod' class="form-control input-sm">
+  <option value="today"[#if PERIOD="today"#] selected[#endif#]><#LANG_PERIOD_TODAY#>
+  <option value="day"[#if PERIOD="day"#] selected[#endif#]><#LANG_PERIOD_DAY#>
+  <option value="week"[#if PERIOD="week"#] selected[#endif#]><#LANG_PERIOD_WEEK#>
+  <option value="month"[#if PERIOD="month"#] selected[#endif#]><#LANG_PERIOD_MONTH#>
+  <option value="custom"[#if PERIOD="custom"#] selected[#endif#]><#LANG_PERIOD_CUSTOM#>...
+ </select>
+ </td>
+ <td>
+ <span id='customDates' [#if PERIOD!="custom"#]style="display:none"[#endif#]>
+ <table width="100%" border="0">
+  <tr>
+   <td>
+ </td>
+ <td>
+ <input type="date" name="from" value="[#FROM#]" class="form-control input-sm">
+ </td>
+ <td>
+ -
+ </td>
+ <td>
+ <input type="date" name="to" value="[#TO#]" class="form-control input-sm">
+  </td>
+  </tr>
+ </table>
+ </span>
+ </td>
+ <td>
+ <input type="submit" name="Update" value="<#LANG_SEARCH#>" class="btn btn-sm">
+ </td>
+ </form>
+ </tr>
+</table>
+</div>
+
+<div id="map" style="width: 100%; height: 620px;"></div>

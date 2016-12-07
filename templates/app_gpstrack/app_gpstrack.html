@@ -4,7 +4,12 @@
 
 [#if ACTION=""#]
 <!-- Frontend -->
- [#inc action_usual.html#]
+ [#if MAPPROVIDER="google"#]	
+	[#inc action_usual_google.html#]
+ [#endif#]
+ [#if MAPPROVIDER="yandex"#]	
+	[#inc action_usual_yandex.html#]
+ [#endif#]
 [#endif#]
 [#if ACTION="admin"#]
 <!-- Control Panel -->

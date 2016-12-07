@@ -1,0 +1,51 @@
+
+ [#if VIEW_MODE="gpsoptions" || VIEW_MODE=""#]
+
+[#if OK#]
+   <div class="alert alert-success"><#LANG_DATA_SAVED#></div>
+[#endif OK#]
+
+<div id='settings'>
+<form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
+<fieldset>
+
+<div class="form-group">
+ <label class="control-label"> <#LANG_GPSTRACK_MAPPROVIDER#> </label>
+ <div class="col-lg-6">
+<select class="form-control" name="mapprovider">
+    <option value="google" [#if MAPPROVIDER=="google"#] selected[#endif#]>Google</option>
+    <option value="yandex" [#if MAPPROVIDER=="yandex"#] selected[#endif#]>Yandex</option>
+   </select>
+</div>
+</div>
+
+<div class="form-group">
+    <label class="control-label"> <#LANG_GPSTRACK_MAPTYPE#> </label>
+    <div class="col-lg-6">
+        <select class="form-control" name="maptype">
+            <option value="map" [#if MAPTYPE=="map"#] selected[#endif#]><#LANG_GPSTRACK_MAPTYPE_MAP#></option>
+            <option value="satellite" [#if MAPTYPE=="satellite"#] selected[#endif#]><#LANG_GPSTRACK_MAPTYPE_SATELLITE#></option>
+            <option value="hybrid" [#if MAPTYPE=="hybrid"#] selected[#endif#]><#LANG_GPSTRACK_MAPTYPE_HYBRID#></option>
+        </select>
+    </div>
+</div>
+
+<div class="form-group">
+    <label class="control-label"> <#LANG_GPSTRACK_MAX_ACCURACY#> </label>
+    <div class="col-lg-6">
+        <input type="number" class="form-control" name="max_accuracy" value="[#if MAX_ACCURACY==""#]0[#else#][#MAX_ACCURACY#][#endif#]" class="input">
+		<p class="help-block"><#LANG_GPSTRACK_MAX_ACCURACY_DESC#></p>
+    </div>
+</div>
+
+</div>
+
+<div class="form-actions">
+<button type="submit" name="subm" value="Submit" class="btn btn-primary"><#LANG_UPDATE#></button>
+<input type="hidden" name="view_mode" value="update_settings">
+<input type="hidden" name="mode" value="update">
+</div>
+</fieldset>
+</form>
+</div>
+ [#endif VIEW_MODE#]
