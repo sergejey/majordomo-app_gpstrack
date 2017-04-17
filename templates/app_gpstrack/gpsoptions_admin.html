@@ -34,18 +34,16 @@
     <label class="control-label"> <#LANG_GPSTRACK_MAX_ACCURACY#> </label>
     <div class="col-lg-6">
         <input type="number" class="form-control" name="max_accuracy" value="[#if MAX_ACCURACY==""#]0[#else#][#MAX_ACCURACY#][#endif#]" class="input">
-		<p class="help-block"><#LANG_GPSTRACK_MAX_ACCURACY_DESC#></p>
+                <p class="help-block"><#LANG_GPSTRACK_MAX_ACCURACY_DESC#></p>
     </div>
 </div>
 
-</div>
-
 <div class="form-actions">
-<button type="submit" name="subm" value="Submit" class="btn btn-primary"><#LANG_UPDATE#></button>
+<input type="submit" name="subm" value="<#LANG_UPDATE#>" class="btn btn-default btn-primary">
 <input type="hidden" name="view_mode" value="update_settings">
 <input type="hidden" name="mode" value="update">
 </div>
 </fieldset>
 </form>
 </div>
- [#endif VIEW_MODE#]
+[#endif VIEW_MODE#]
