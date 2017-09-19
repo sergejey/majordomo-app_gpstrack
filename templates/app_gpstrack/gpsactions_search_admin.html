@@ -16,7 +16,7 @@
 <tr>
 [#if !IS_SET_LOCATION_ID#]
  <td  >
- <b>LOCATION_ID</b>
+ <b><#LANG_LOCATION#></b>
  </td>
 [#endif IS_SET_LOCATION_ID#]
 [#if !IS_SET_USER_ID#]
@@ -58,11 +58,9 @@
  <td
    
    >
-  [#if ACTION_TYPE="1"#]
-   Entering
-  [#else#]
-   Leaving
-  [#endif#]
+  [#if ACTION_TYPE="2"#]<#LANG_GPSTRACK_ACTION_ENTERING_OR_LEAVING#>[#endif#]
+  [#if ACTION_TYPE="1"#]<#LANG_GPSTRACK_ACTION_ENTERING#>[#endif#]
+  [#if ACTION_TYPE="0"#]<#LANG_GPSTRACK_ACTION_LEAVING#>[#endif#]
  </td>
 [#if "<#IS_SET_SCRIPT_ID#>"!="1"#]
  <td
@@ -71,7 +69,7 @@
   [#if SCRIPT_TITLE!=""#]
    [#SCRIPT_TITLE#]
   [#else#]
-   Code
+   <#LANG_CODE#>
   [#endif#]
  </td>
 [#endif IS_SET_SCRIPT_ID#]

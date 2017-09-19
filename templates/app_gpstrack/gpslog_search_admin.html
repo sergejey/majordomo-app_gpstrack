@@ -28,85 +28,77 @@
 <!-- / paging -->
 <!-- search results (list) -->
 <form action="?" method="post" name="frmList_gpslog" style="padding:0px">
-<table border=0 cellpadding=5 cellspacing=1 bgcolor="#000000" align=center>
+<table class="table table-striped">
+<thead>
 <tr>
- <td align=center bgcolor="#AAAAAA">
- <b><#LANG_ADDED#></b>
- </td>
- <td align=center bgcolor="#AAAAAA">
- <b><#LANG_LATITUDE#></b>
- </td>
- <td align=center bgcolor="#AAAAAA">
- <b><#LANG_LONGITUDE#></b>
- </td>
- <td align=center bgcolor="#AAAAAA">
- <b><#LANG_SPEED#></b>
- </td>
- <td align=center bgcolor="#AAAAAA">
- <b><#LANG_ACCURACY#></b>
- </td>
- <td align=center bgcolor="#AAAAAA">
- <b><#LANG_BATTERY_LEVEL#></b>
- </td>
- <td align=center bgcolor="#AAAAAA">
- <b><#LANG_CHARGING#></b>
- </td>
- <td align=center bgcolor="#AAAAAA">
- <b><#LANG_DEVICE#></b>
- </td>
+ <th>
+  <#LANG_ADDED#>
+ </th>
+ <th>
+ <#LANG_LATITUDE#>
+ </th>
+ <th>
+ <#LANG_LONGITUDE#>
+ </th>
+ <th>
+ <#LANG_SPEED#>
+ </th>
+ <th>
+  <#LANG_ACCURACY#>
+ </th>
+ <th>
+ <#LANG_BATTERY_LEVEL#>
+ </th>
+ <th>
+ <#LANG_CHARGING#>
+ </th>
+ <th>
+ <#LANG_DEVICE#>
+ </th>
 [#if !IS_SET_DEVICE_ID#]
- <td align=center bgcolor="#AAAAAA">
- <b><#LANG_DEVICE#></b>
- </td>
+ <th>
+ <#LANG_DEVICE#>
+ </th>
 [#endif IS_SET_DEVICE_ID#]
 [#if !IS_SET_LOCATION_ID#]
- <td align=center bgcolor="#AAAAAA">
- <b><#LANG_LOCATION#></b>
- </td>
+ <th>
+ <#LANG_LOCATION#>
+ </th>
 [#endif IS_SET_LOCATION_ID#]
-<td bgcolor="#AAAAAA">&nbsp;</td>
+<th>&nbsp;</th>
 </tr>
+</thead>
 [#begin RESULT#]
 <tr >
- <td
-   align=center
-   bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]">
+ <td>
   [#if ADDED!=""#]
    [#ADDED#]
   [#else#]
    &nbsp;
   [#endif#]
  </td>
- <td
-   align=center
-   bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]">
+ <td>
   [#if LAT!=""#]
    [#LAT#]
   [#else#]
    &nbsp;
   [#endif#]
  </td>
- <td
-   align=center
-   bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]">
+ <td>
   [#if LON!=""#]
    [#LON#]
   [#else#]
    &nbsp;
   [#endif#]
  </td>
- <td
-   align=center
-   bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]">
+ <td>
   [#if SPEED!=""#]
    [#SPEED#]
   [#else#]
    &nbsp;
   [#endif#]
  </td>
- <td
-   align=center
-   bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]">
+ <td>
   [#if ACCURACY!=""#]
    [#ACCURACY#]
   [#else#]
@@ -114,27 +106,21 @@
   [#endif#]
  </td>
 
- <td
-   align=center
-   bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]">
+ <td>
   [#if BATTLEVEL!=""#]
    [#BATTLEVEL#]
   [#else#]
    &nbsp;
   [#endif#]
  </td>
- <td
-   align=center
-   bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]">
+ <td>
   [#if CHARGING!=""#]
    [#CHARGING#]
   [#else#]
    &nbsp;
   [#endif#]
  </td>
- <td
-   align=center
-   bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]">
+ <td>
   [#if DEVICEID!=""#]
    [#DEVICEID#]
   [#else#]
@@ -142,9 +128,7 @@
   [#endif#]
  </td>
 [#if "<#IS_SET_DEVICE_ID#>"!="1"#]
- <td
-   align=center
-   bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]">
+ <td>
   [#if DEVICE_TITLE!=""#]
    <b>[#DEVICE_TITLE#]</b>
   [#else#]
@@ -153,30 +137,22 @@
  </td>
 [#endif IS_SET_DEVICE_ID#]
 [#if "<#IS_SET_LOCATION_ID#>"!="1"#]
- <td
-   align=center
-   bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]">
+ <td>
   [#if LOCATION_TITLE!=""#]
    <b>[#LOCATION_TITLE#]</b>
   [#else#]
    &nbsp;
   [#endif#]
   [#if "<#MAPPROVIDER#>"=="google"#]
-  <a href="http://maps.googleapis.com/maps/api/staticmap?center=[#LAT#],[#LON#]&size=512x512&maptype=[#if "<#MAPTYPE#>"=="hybrid"#]hybrid[#endif#][#if "<#MAPTYPE#>"=="map"#]roadmap[#endif#][#if "<#MAPTYPE#>"=="satellite"#]satellite[#endif#]&sensor=false&zoom=16&markers=[#LAT#],[#LON#]" target=_blank><#LANG_MAP#></a>
+  <a href="http://maps.googleapis.com/maps/api/staticmap?center=[#LAT#],[#LON#]&size=512x512&maptype=[#if "<#MAPTYPE#>"=="hybrid"#]hybrid[#endif#][#if "<#MAPTYPE#>"=="map"#]roadmap[#endif#][#if "<#MAPTYPE#>"=="satellite"#]satellite[#endif#]&sensor=false&zoom=16&markers=[#LAT#],[#LON#][#if "<#API_KEY#>"!=""#]&key=<#API_KEY#>[#endif#]" target=_blank><#LANG_MAP#></a>
   [#endif MAPPROVIDER#]
   [#if "<#MAPPROVIDER#>"=="yandex"#]
   <a href="https://static-maps.yandex.ru/1.x/?l=[#if "<#MAPTYPE#>"=="hybrid"#]sat,skl[#endif#][#if "<#MAPTYPE#>"=="map"#]map[#endif#][#if "<#MAPTYPE#>"=="satellite"#]sat[#endif#]&ll=[#LON#],[#LAT#]&pt=[#LON#],[#LAT#]&size=450,450&z=16" target=_blank><#LANG_MAP#></a>
   [#endif MAPPROVIDER#]
  </td>
 [#endif IS_SET_LOCATION_ID#]
- <td bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]">
-  <table border=0>
-  [#if "<#ACTION#>"=="admin"#]
-   <td bgcolor="[#if NEW_COLOR#]#CCCCCC[#else#]#FFFFFF[#endif#]" align=center>
-    <a href="?data_source=<#DATA_SOURCE#>&view_mode=delete_gpslog&id=[#ID#]" onClick="return confirm('<#LANG_ARE_YOU_SURE#>')"><#LANG_DELETE#></a>
-   </td>
-  [#endif ACTION#]
-  </table>
+ <td>
+    <a href="?data_source=<#DATA_SOURCE#>&view_mode=delete_gpslog&id=[#ID#]" onClick="return confirm('<#LANG_ARE_YOU_SURE#>')" class="btn btn-sm btn-default"><i class="glyphicon glyphicon-remove"></i></a>
  </td>
 </tr>
 [#end RESULT#]

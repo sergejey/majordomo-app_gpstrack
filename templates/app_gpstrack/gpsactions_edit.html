@@ -39,7 +39,7 @@
         <label class="col-lg-4 control-label" for="inputTitle"><#LANG_LOCATION#>:<font color="red">*</font></label>
         <div class="col-lg-5">
 			<select name="location_id" class="form-control [#if ERR_LOCATION_ID#]alert-danger[#endif#]">
-			  <option value="">select
+			  <option value=""><#LANG_SELECT#>
 			  [#begin LOCATION_ID_OPTIONS#]<option value="[#ID#]"[#if SELECTED#] selected[#endif#]>[#TITLE#]
 			  [#end LOCATION_ID_OPTIONS#]
 			 </select>
@@ -53,7 +53,7 @@
         <label class="col-lg-4 control-label" for="inputTitle"><#LANG_USER#>:<font color="red">*</font></label>
         <div class="col-lg-5">
 			<select name="user_id" class="form-control [#if ERR_USER_ID#]alert-danger[#endif#]">
-			 <option value="">select
+			 <option value=""><#LANG_SELECT#>
   [#begin USER_ID_OPTIONS#]<option value="[#ID#]"[#if SELECTED#] selected[#endif#]>[#NAME#]
   [#end USER_ID_OPTIONS#]
 			 </select>
@@ -67,7 +67,7 @@
         <label class="col-lg-4 control-label" for="inputTitle"><#LANG_ACTION_TYPE#>:<font color="red">*</font></label>
         <div class="col-lg-5">
 			<select name="action_type" class="form-control [#if ERR_ACTION_TYPE#]alert-danger[#endif#]">
-			 <option value="">select
+			 <option value=""><#LANG_SELECT#>
   [#begin ACTION_TYPE_OPTIONS#]<option value="[#VALUE#]"[#if SELECTED#] selected[#endif#]>[#TITLE#]
   [#end ACTION_TYPE_OPTIONS#]
 			 </select>
@@ -83,7 +83,7 @@
         <label class="col-lg-4 control-label" for="inputTitle"><#LANG_SCRIPT#>:<font color="red">*</font></label>
         <div class="col-lg-5">
 			<select name="script_id" class="form-control [#if ERR_SCRIPT_ID#]alert-danger[#endif#]">
-			<option value="">select
+			<option value=""><#LANG_SELECT#>
   [#begin SCRIPT_ID_OPTIONS#]<option value="[#ID#]"[#if SELECTED#] selected[#endif#]>[#TITLE#]
   [#end SCRIPT_ID_OPTIONS#]
 			 </select>
