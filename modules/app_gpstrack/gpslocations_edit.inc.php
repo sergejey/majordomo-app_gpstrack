@@ -47,6 +47,8 @@
    global $is_home;
    $rec['IS_HOME']=(int)$is_home;
 
+   global $linked_object;
+   $rec['LINKED_OBJECT']=$linked_object;
 
   //updating 'VIRTUAL_USER_ID' (int)
    global $virtual_user_id;
@@ -56,16 +58,23 @@
     if ($rec['ID']) {
      SQLUpdate($table_name, $rec); // update
     } else {
-     $new_rec=1;
-     $rec['ID']=SQLInsert($table_name, $rec); // adding new record
+     $new_rec = 1;
+     $rec['ID'] = SQLInsert($table_name, $rec); // adding new record
     }
 
     if ($rec['IS_HOME']) {
-     SQLExec("UPDATE gpslocations SET IS_HOME=0 WHERE IS_HOME=1 AND ID!=".$rec['ID']);
+     SQLExec("UPDATE gpslocations SET IS_HOME=0 WHERE IS_HOME=1 AND ID!=" . $rec['ID']);
     }
 
 
-    $out['OK']=1;
+    $out['OK'] = 1;
+    if (!$rec['LINKED_OBJECT']) {
+     $object_title = 'Location' . $rec['ID'];
+     addClassObject('GPSLocations', $object_title, 'location' . $rec['ID']);
+     sg($object_title . '.locationTitle', $rec['TITLE']);
+     $rec['LINKED_OBJECT']=$object_title;
+     SQLUpdate('gpslocations',$rec);
+    }
    } else {
     $out['ERR']=1;
    }

@@ -356,6 +356,14 @@ function usual(&$out) {
 */
  function install($data='') {
   parent::install();
+  addClass('GPSLocations');
+  addClassMethod('GPSLocations','userEntered','//$params["USER_OBJECT"]'."\n");
+  addClassMethod('GPSLocations','userLeft','//$params["USER_OBJECT"]'."\n");
+  addClassProperty('GPSLocations','locationTitle');
+  addClassProperty('GPSLocations','latestVisit');
+
+  addClassMethod('Users','enteredLocation','//$params["LOCATION_OBJECT"], $params["LOCATION"]'."\n");
+  addClassMethod('Users','leftLocation','//$params["LOCATION_OBJECT"], $params["LOCATION"]'."\n");
  }
 /**
 * Uninstall
@@ -404,6 +412,7 @@ gpsactions - Actions
 
  gpslocations: ID int(10) unsigned NOT NULL auto_increment
  gpslocations: TITLE varchar(255) NOT NULL DEFAULT ''
+ gpslocations: LINKED_OBJECT varchar(255) NOT NULL DEFAULT '' 
  gpslocations: LAT float DEFAULT '0' NOT NULL
  gpslocations: LON float DEFAULT '0' NOT NULL
  gpslocations: RANGE float DEFAULT '0' NOT NULL
