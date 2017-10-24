@@ -31,7 +31,7 @@
   $from=$to;
  }
 
- $out['DEVICES']=SQLSelect("SELECT gpsdevices.*, users.NAME FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE 1 ORDER BY users.NAME");//TO_DAYS(NOW())-TO_DAYS(gpsdevices.UPDATED)<=30 
+ $out['DEVICES']=SQLSelect("SELECT gpsdevices.*, users.NAME, users.USERNAME FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE 1 ORDER BY users.NAME");//TO_DAYS(NOW())-TO_DAYS(gpsdevices.UPDATED)<=30 
  $total=count($out['DEVICES']);
  for($i=0;$i<$total;$i++) {
   $latest_point=SQLSelectOne("SELECT * FROM gpslog WHERE DEVICE_ID='".$out['DEVICES'][$i]['ID']."' ORDER BY ADDED DESC");
