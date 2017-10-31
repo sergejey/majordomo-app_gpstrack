@@ -274,7 +274,7 @@ if (isset($_REQUEST['latitude']))
             //Debmes("Device (" . $device['TITLE'] . ") ENTERED location " . $locations[$i]['TITLE']);
 
             if ($locations[$i]['LINKED_OBJECT']) {
-               setGloba($locations[$i]['LINKED_OBJECT'].'.latestVisit',date('Y-m-d H:i:s'));
+               setGlobal($locations[$i]['LINKED_OBJECT'].'.latestVisit',date('Y-m-d H:i:s'));
                callMethodSafe($locations[$i]['LINKED_OBJECT'].'.userEntered',$params);
             }
             if ($params['USER_OBJECT']) {
