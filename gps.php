@@ -328,13 +328,6 @@ if (isset($_REQUEST['latitude']))
       else
       {
 
-         if ($locations[$i]['LINKED_OBJECT']) {
-            callMethodSafe($locations[$i]['LINKED_OBJECT'].'.userLeft',$params);
-         }
-         if ($params['USER_OBJECT']) {
-            callMethodSafe($params['USER_OBJECT'].'.leftLocation',array('LOCATION_OBJECT'=>$locations[$i]['LINKED_OBJECT'],'LOCATION'=>$locations[$i]['TITLE']));
-         }
-
          $sqlQuery = "SELECT *
                         FROM gpslog
                        WHERE DEVICE_ID = '" . $device['ID'] . "'
@@ -347,6 +340,14 @@ if (isset($_REQUEST['latitude']))
          if ($tmp['LOCATION_ID'] == $locations[$i]['ID'])
          {
             //Debmes("Device (" . $device['TITLE'] . ") LEFT location " . $locations[$i]['TITLE']);
+            
+            if ($locations[$i]['LINKED_OBJECT']) {
+               callMethodSafe($locations[$i]['LINKED_OBJECT'].'.userLeft',$params);
+            }
+            if ($params['USER_OBJECT']) {
+               callMethodSafe($params['USER_OBJECT'].'.leftLocation',array('LOCATION_OBJECT'=>$locations[$i]['LINKED_OBJECT'],'LOCATION'=>$locations[$i]['TITLE']));
+            }
+            
             $params['LEAVING']=1;
             // left location
             $sqlQuery = "SELECT *
