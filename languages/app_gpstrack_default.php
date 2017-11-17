@@ -3,7 +3,11 @@
 
 $dictionary=array(
 
+'GPSTRACK_ACTION_ENTERING'=>'Entering location',
+'GPSTRACK_ACTION_LEAVING'=>'Leaving location',
+'GPSTRACK_ACTION_ENTERING_OR_LEAVING'=>'Arriving or Leaving location',
 'GPSTRACK_OPTIONS'=>'Settings',
+'GPSTRACK_APIKEY'=>'API key (optional):',
 'GPSTRACK_MAPPROVIDER'=>'Map provider:',
 'GPSTRACK_MAPTYPE'=>'Map type:',
 'GPSTRACK_MAPTYPE_MAP'=>'Map',

@@ -246,6 +246,11 @@ if (isset($_REQUEST['latitude']))
       {
          //Debmes("Device (" . $device['TITLE'] . ") NEAR location " . $locations[$i]['TITLE']);
          $location_found = 1;
+
+         $params = array();
+         $params['LOCATION']=$locations[$i]['TITLE'];
+         $params['USER_OBJECT']=$user['LINKED_OBJECT'];
+
          
          if ($user['LINKED_OBJECT'])
             setGlobal($user['LINKED_OBJECT'] . '.seenAt', $locations[$i]['TITLE']);
@@ -267,12 +272,20 @@ if (isset($_REQUEST['latitude']))
          if ($tmp['LOCATION_ID'] != $locations[$i]['ID'])
          {
             //Debmes("Device (" . $device['TITLE'] . ") ENTERED location " . $locations[$i]['TITLE']);
-            
+
+            if ($locations[$i]['LINKED_OBJECT']) {
+               setGlobal($locations[$i]['LINKED_OBJECT'].'.latestVisit',date('Y-m-d H:i:s'));
+               callMethodSafe($locations[$i]['LINKED_OBJECT'].'.userEntered',$params);
+            }
+            if ($params['USER_OBJECT']) {
+               callMethodSafe($params['USER_OBJECT'].'.enteredLocation',array('LOCATION_OBJECT'=>$locations[$i]['LINKED_OBJECT'],'LOCATION'=>$locations[$i]['TITLE']));
+            }
+
             // entered location
             $sqlQuery = "SELECT *
                            FROM gpsactions
                           WHERE LOCATION_ID = '" . $locations[$i]['ID'] . "'
-                            AND ACTION_TYPE = 1
+                            AND (ACTION_TYPE = 1 OR ACTION_TYPE = 2)
                             AND USER_ID     = '" . $device['USER_ID'] . "'";
 
             $gpsaction = SQLSelectOne($sqlQuery);
@@ -283,10 +296,12 @@ if (isset($_REQUEST['latitude']))
                $gpsaction['LOG']      = $gpsaction['EXECUTED'] . " Executed\n" . $gpsaction['LOG'];
                
                SQLUpdate('gpsactions', $gpsaction);
-               
+
+               $params['ENTERING']=1;
+
                if ($gpsaction['SCRIPT_ID'])
                {
-                  runScript($gpsaction['SCRIPT_ID']);
+                  runScript($gpsaction['SCRIPT_ID'],$params);
                }
                elseif ($gpsaction['CODE'])
                {
@@ -312,6 +327,14 @@ if (isset($_REQUEST['latitude']))
       }
       else
       {
+
+         if ($locations[$i]['LINKED_OBJECT']) {
+            callMethodSafe($locations[$i]['LINKED_OBJECT'].'.userLeft',$params);
+         }
+         if ($params['USER_OBJECT']) {
+            callMethodSafe($params['USER_OBJECT'].'.leftLocation',array('LOCATION_OBJECT'=>$locations[$i]['LINKED_OBJECT'],'LOCATION'=>$locations[$i]['TITLE']));
+         }
+
          $sqlQuery = "SELECT *
                         FROM gpslog
                        WHERE DEVICE_ID = '" . $device['ID'] . "'
@@ -324,12 +347,12 @@ if (isset($_REQUEST['latitude']))
          if ($tmp['LOCATION_ID'] == $locations[$i]['ID'])
          {
             //Debmes("Device (" . $device['TITLE'] . ") LEFT location " . $locations[$i]['TITLE']);
-            
+            $params['LEAVING']=1;
             // left location
             $sqlQuery = "SELECT *
                            FROM gpsactions
                           WHERE LOCATION_ID = '" . $locations[$i]['ID'] . "'
-                            AND ACTION_TYPE = 0
+                            AND (ACTION_TYPE = 0  OR ACTION_TYPE = 2)
                             AND USER_ID     = '" . $device['USER_ID'] . "'";
             
             $gpsaction = SQLSelectOne($sqlQuery);
@@ -343,7 +366,7 @@ if (isset($_REQUEST['latitude']))
                
                if ($gpsaction['SCRIPT_ID'])
                {
-                  runScript($gpsaction['SCRIPT_ID']);
+                  runScript($gpsaction['SCRIPT_ID'],$params);
                }
                elseif ($gpsaction['CODE'])
                {

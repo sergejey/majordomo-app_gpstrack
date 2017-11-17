@@ -8,7 +8,6 @@
 * @author Serge Dzheigalo <jey@tut.by> http://smartliving.ru/
 * @version 0.2 (wizard, 14:07:59 [Jul 25, 2011])
 */
-Define('DEF_ACTION_TYPE_OPTIONS', '1=Entering|0=Leaving'); // options for 'ACTION_TYPE'
 //
 //
 class app_gpstrack extends module {
@@ -92,6 +91,9 @@ function getParams() {
 * @access public
 */
 function run() {
+
+ Define('DEF_ACTION_TYPE_OPTIONS', '1='.LANG_GPSTRACK_ACTION_ENTERING.'|0='.LANG_GPSTRACK_ACTION_LEAVING.'|2='.LANG_GPSTRACK_ACTION_ENTERING_OR_LEAVING); // options for 'ACTION_TYPE'
+
  global $session;
   $out=array();
   if ($this->action=='admin') {
@@ -148,6 +150,7 @@ function admin(&$out) {
  $out['MAPPROVIDER'] = $this->config['MAPPROVIDER'];
  $out['MAPTYPE'] = $this->config['MAPTYPE'];
  $out['MAX_ACCURACY'] = $this->config['MAX_ACCURACY'];
+ $out['API_KEY'] = $this->config['API_KEY'];
  if ($this->view_mode=='update_settings') {
    global $mapprovider;
    $this->config['MAPPROVIDER']=$mapprovider;
@@ -155,6 +158,8 @@ function admin(&$out) {
    $this->config['MAPTYPE']=$maptype;
    global $max_accuracy;
    $this->config['MAX_ACCURACY']=$max_accuracy;
+   global $api_key;
+   $this->config['API_KEY']=$api_key;
    $this->saveConfig();
    $this->redirect("?data_source=gpsoptions&ok=1");
  }
@@ -234,6 +239,7 @@ function usual(&$out) {
  $out['MAPPROVIDER'] = $this->config['MAPPROVIDER'];
  $out['MAPTYPE'] = $this->config['MAPTYPE'];
  $out['MAX_ACCURACY'] = $this->config['MAX_ACCURACY'];
+ $out['API_KEY'] = $this->config['API_KEY'];
  require(DIR_MODULES.$this->name.'/usual.inc.php');
 }
 /**
@@ -350,6 +356,14 @@ function usual(&$out) {
 */
  function install($data='') {
   parent::install();
+  addClass('GPSLocations');
+  addClassMethod('GPSLocations','userEntered','//$params["USER_OBJECT"]'."\n");
+  addClassMethod('GPSLocations','userLeft','//$params["USER_OBJECT"]'."\n");
+  addClassProperty('GPSLocations','locationTitle');
+  addClassProperty('GPSLocations','latestVisit');
+
+  addClassMethod('Users','enteredLocation','//$params["LOCATION_OBJECT"], $params["LOCATION"]'."\n");
+  addClassMethod('Users','leftLocation','//$params["LOCATION_OBJECT"], $params["LOCATION"]'."\n");
  }
 /**
 * Uninstall
@@ -398,6 +412,7 @@ gpsactions - Actions
 
  gpslocations: ID int(10) unsigned NOT NULL auto_increment
  gpslocations: TITLE varchar(255) NOT NULL DEFAULT ''
+ gpslocations: LINKED_OBJECT varchar(255) NOT NULL DEFAULT '' 
  gpslocations: LAT float DEFAULT '0' NOT NULL
  gpslocations: LON float DEFAULT '0' NOT NULL
  gpslocations: RANGE float DEFAULT '0' NOT NULL

@@ -21,7 +21,8 @@
     continue;
    }
    if (!$records[$i]['LOCATION_ID']) continue;
-   if ($records[$i]['LOCATION_ID']==$records[$i+1]['LOCATION_ID'] && $records[$i]['LOCATION_ID']==$records[$i-1]['LOCATION_ID']) {
+   if ($records[$i]['LOCATION_ID']==$records[$i+1]['LOCATION_ID'] && $records[$i]['LOCATION_ID']==$records[$i-1]['LOCATION_ID']
+      && $records[$i]['GPS_DEVICE_ID']==$records[$i+1]['GPS_DEVICE_ID'] && $records[$i]['GPS_DEVICE_ID']==$records[$i-1]['GPS_DEVICE_ID']) {
     //$to_delete[]=$records[$i]['ID'];
     SQLExec("DELETE FROM gpslog WHERE ID=".$records[$i]['ID']);
    }
