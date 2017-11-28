@@ -242,16 +242,16 @@ if (isset($_REQUEST['latitude']))
       }
       
       //echo ' (' . $locations[$i]['LAT'] . ' : ' . $locations[$i]['LON'] . ') ' . $distance . ' m';
+      
+      $params = array();
+      $params['LOCATION']=$locations[$i]['TITLE'];
+      $params['USER_OBJECT']=$user['LINKED_OBJECT'];
+
       if ($distance <= $locations[$i]['RANGE'])
       {
          //Debmes("Device (" . $device['TITLE'] . ") NEAR location " . $locations[$i]['TITLE']);
          $location_found = 1;
 
-         $params = array();
-         $params['LOCATION']=$locations[$i]['TITLE'];
-         $params['USER_OBJECT']=$user['LINKED_OBJECT'];
-
-         
          if ($user['LINKED_OBJECT'])
             setGlobal($user['LINKED_OBJECT'] . '.seenAt', $locations[$i]['TITLE']);
          
