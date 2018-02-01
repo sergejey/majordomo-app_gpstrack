@@ -391,7 +391,7 @@ if (isset($_REQUEST['latitude']))
 }
 
 if ($user['LINKED_OBJECT'] && !$location_found)
-   setGlobal($user['LINKED_OBJECT'] . '.seenAt', getgeocode($lat, $lon));
+   setGlobal($user['LINKED_OBJECT'] . '.seenAt', '');
 
 $sqlQuery = "SELECT *, DATE_FORMAT(ADDED, '%H:%i') as DAT
                FROM shouts
@@ -454,11 +454,4 @@ function calculateTheDistance($latA, $lonA, $latB, $lonB)
    $dist = round($ad * EARTH_RADIUS);
 
    return $dist;
-}
-
-function getgeocode($lat, $lon)  {
-   $data_file="http://geocode-maps.yandex.ru/1.x/?geocode=N".$lat.",E".$lon; // адрес xml файла
-   $xml = simplexml_load_file($data_file); // раскладываем xml на массив
-   $res=$xml->{'GeoObjectCollection'}->{'featureMember'}[0]->{'GeoObject'}->{'metaDataProperty'}->{'GeocoderMetaData'}->{'AddressDetails'}->{'Country'}->{'AddressLine'};
-   return $res;
 }
