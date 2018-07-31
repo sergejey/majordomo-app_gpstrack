@@ -94,7 +94,7 @@
 
 
 [#if ID!=""#]
-
+[#if API_KEY!=""#]
 <img src="http://maps.googleapis.com/maps/api/staticmap?center=[#LAT#],[#LON#]&size=512x512&maptype=hybrid&sensor=false&zoom=14&markers=[#LAT#],[#LON#]&key=[#API_KEY#]" border="0">
-
+[#endif API_KEY#]
 [#endif ID#]
