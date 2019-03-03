@@ -1,12 +1,55 @@
-<!--#
- @version 0.2
-#-->
+<form class="form-inline" action="?" method="get">
+ <div class="form-group">
+  <select name="user_id" class="form-control">
+   <option value="0"><#LANG_USER#></option>
+   [#begin USERS#]
+   <option value="[#ID#]"[#if ID="<#USER_ID#>"#] selected[#endif#]>[#NAME#]</option>
+   [#end USERS#]
+  </select>
+ </div>
+ <div class="form-group">
+  <select name="device_id" class="form-control">
+   <option value="0"><#LANG_DEVICE#></option>
+   [#begin DEVICES#]
+   <option value="[#ID#]"[#if ID="<#DEVICE_ID#>"#] selected[#endif#]>[#TITLE#]</option>
+   [#end DEVICES#]
+  </select>
+ </div>
+ <div class="form-group">
+  <select name="location_id" class="form-control">
+   <option value="0"><#LANG_LOCATION#></option>
+   [#begin LOCATIONS#]
+   <option value="[#ID#]"[#if ID="<#LOCATION_ID#>"#] selected[#endif#]>[#TITLE#]</option>
+   [#end LOCATIONS#]
+  </select>
+ </div>
 
-<p align="center">
-<a href="?clear_log=1" onClick="return confirm('<#LANG_ARE_YOU_SURE#>')" class="btn btn-default"><#LANG_CLEAR_LOG#></a>
-&nbsp;
-<a href="?optimize_log=1" target=_blank onClick="return confirm('<#LANG_ARE_YOU_SURE#>')" class="btn btn-default"><#LANG_OPTIMIZE_LOG#></a>
-</p>
+ <div class="form-group">
+
+   <input type="text" placeholder="from..." value="<#DATE_FROM#>" name="date_from" class="form-control datepicker" id="date_from">
+
+ </div>
+ <div class="form-group">
+   <input type="text" placeholder="to..." value="<#DATE_TO#>" name="date_to" class="form-control datepicker" id="date_to">
+ </div>
+
+
+ <div class="form-group">
+  <input type="submit" value="<#LANG_SEARCH#>" class="btn btn-default btn-primary">
+  [#if SEARCHING#]
+  <a href="?" class="btn btn-default"><#LANG_CANCEL#></a>
+  [#endif#]
+ </div>
+</form>
+
+<div class="row">
+ <div class="col-md-8">[#PAGINATOR#]</div>
+ <div class="col-md-4 text-right" style="padding-top:20px">
+  <a href="?clear_log=1" onClick="return confirm('<#LANG_ARE_YOU_SURE#>')" class="btn btn-default"><#LANG_CLEAR_LOG#></a>
+  <a href="?optimize_log=1" target=_blank onClick="return confirm('<#LANG_ARE_YOU_SURE#>')" class="btn btn-default"><#LANG_OPTIMIZE_LOG#></a>
+ </div>
+</div>
+
 
 <table width=100% border=0><tr>
 <td valign=top>
