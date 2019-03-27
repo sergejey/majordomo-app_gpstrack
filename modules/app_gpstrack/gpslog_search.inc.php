@@ -87,6 +87,7 @@ if ($location_id) {
 $user_id=gr('user_id','int');
 if ($user_id) {
     $out['USER_ID']=$user_id;
+    $qry.=" AND gpsdevices.USER_ID=".$user_id;
     $out['SEARCHING']=1;
 }
 

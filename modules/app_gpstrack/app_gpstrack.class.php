@@ -166,6 +166,12 @@ function admin(&$out) {
  if ($_GET['ok']) {
   $out['OK']=1;
  }
+
+ if ($this->data_source == 'preview' || gr('ajax')) {
+  $this->usual($out);
+  return;
+ }
+
  if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
   $out['SET_DATASOURCE']=1;
  }
@@ -442,6 +448,19 @@ gpsactions - Actions
  gpsactions: INDEX (USER_ID)
 EOD;
   parent::dbInstall($data);
+
+  /*
+  $indexes=array('gpslog'=>array('DEVICE_ID','LOCATION_ID'));
+  foreach($indexes as $indexTable=>$v) {
+   foreach($v as $indexColumn) {
+    $indexCheck=SQLSelectOne("SELECT COUNT(1) IndexIsThere FROM INFORMATION_SCHEMA.STATISTICS WHERE table_schema=DATABASE() AND table_name='$indexTable' AND index_name='$indexColumn';");
+    if (!$indexCheck['IndexIsThere']) {
+     SQLExec("CREATE INDEX $indexColumn ON $indexTable($indexColumn);");
+    }
+   }
+  }
+  */
+
  }
 // --------------------------------------------------------------------
 }

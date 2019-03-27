@@ -13,7 +13,8 @@
  <li [#if DATA_SOURCE=="gpslocations"#]class="active"[#endif#]><a href="?data_source=gpslocations"><#LANG_LOCATIONS#></a></li>
  <li [#if DATA_SOURCE=="gpsdevices"#]class="active"[#endif#]><a href="?data_source=gpsdevices"><#LANG_DEVICES#></a></li>
  <li [#if DATA_SOURCE=="gpsactions"#]class="active"[#endif#]><a href="?data_source=gpsactions"><#LANG_ACTIONS#></a></li>
- <li [#if DATA_SOURCE=="gpsoptions"#]class="active"[#endif#]><a href="?data_source=gpsoptions"><#LANG_GPSTRACK_OPTIONS#></a></li> 
+ <li [#if DATA_SOURCE=="gpsoptions"#]class="active"[#endif#]><a href="?data_source=gpsoptions"><#LANG_GPSTRACK_OPTIONS#></a></li>
+ <li [#if DATA_SOURCE=="preview"#]class="active"[#endif#]><a href="?data_source=preview"><#LANG_PREVIEW#></a></li>
 </ul><br>
 <!-- / source select -->
 [#endif SET_DATASOURCE#]
@@ -93,3 +94,7 @@
  [#if DATA_SOURCE="gpsoptions"#]
 	[#inc gpsoptions_admin.html#]
  [#endif DATA_SOURCE#]
+
+[#if DATA_SOURCE="preview"#]
+[#inc preview.html#]
+[#endif DATA_SOURCE#]

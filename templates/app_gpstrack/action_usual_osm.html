@@ -1,0 +1,252 @@
+<script src="http://openlayers.org/api/OpenLayers.js"></script>
+<script src="http://mapstraction.com/mxn/build/latest/mxn.js?(openlayers)" type="text/javascript"></script>
+
+    <script type="text/javascript" language="javascript">
+
+        var updateTimeOut;
+
+        function resizeMap() {
+            $('#map').css({'height':(($(document).height())-40)+'px', 'width':'100%'});
+            return false;
+        }
+
+        function checkMarkerExists(temp_id) {
+            for (var i=0, marker; marker=map.markers[i]; i++){
+                if (marker.temp_id==temp_id) return true;
+            }
+            return false;
+        }
+
+        function getMarkerIndex(temp_id) {
+            for (var i=0, marker; marker=map.markers[i]; i++){
+                if (marker.temp_id==temp_id) return i;
+            }
+            return false;
+        }
+
+        function updateLocations() {
+            var url="?";
+            url+='&ajax=1&op=getlocations';
+
+            $.ajax({
+                url: url
+            }).done(function(data) {
+                var obj=jQuery.parseJSON(data);
+                if (obj.LOCATIONS.length>0) {
+                    var locations=obj.LOCATIONS;
+                    var locationsLength = locations.length;
+
+                    for(var i = 0; i < locationsLength; i++)
+                    {
+                        var location = locations[i];
+                        var center = new mxn.LatLonPoint(parseFloat(location.LAT),parseFloat(location.LON));
+                        var rad = new mxn.Radius(center, 10);
+                        var poly = rad.getPolyline(Math.round(parseFloat(location.RANGE)/1000), '#F00014');
+                        map.addPolyline(poly);
+                        /*
+                        var location = locations[i];
+                        var temp_id  = location.ID;
+                        var myLatLng = {lat: parseFloat(location.LAT), lng: parseFloat(location.LON)};
+                        var myCircle = new google.maps.Circle({
+                            temp_id: temp_id,
+                            center: myLatLng,
+                            radius: parseFloat(location.RANGE),
+                            map: map,
+                            title: location.TITLE,
+                            strokeColor: '#0000FF',
+                            strokeOpacity: 0.8,
+                            strokeWeight: 2,
+                            fillColor: '#0000FF',
+                            fillOpacity: 0.35,
+                        });
+                        */
+                    }
+                }
+            });
+
+
+            return false;
+        }
+
+        function zoomToObject(obj){
+            var bounds = new google.maps.LatLngBounds();
+            var points = obj.getPath().getArray();
+            for (var n = 0; n < points.length ; n++){
+                bounds.extend(points[n]);
+            }
+            map.fitBounds(bounds);
+        }
+
+        function updateRoute(device_id, color) {
+            var url="?";
+            url+='&ajax=1&op=getroute&period=[#PERIOD#]&from=[#FROM#]&to=[#TO#]&device_id='+device_id;
+
+            $.ajax({
+                url: url
+            }).done(function(data) {
+                var obj=jQuery.parseJSON(data);
+                if (obj.PATH.length>0) {
+
+                    var path=obj.PATH;
+                    var polyPoint;
+                    var polyPoints = [];
+
+                    path.forEach(function (item, i, arr) {
+                        polyPoint = new mxn.LatLonPoint(parseFloat(path[i][0]) , parseFloat(path[i][1]));
+                        polyPoints.push(polyPoint);
+                        //var myLatLng = {lat: parseFloat(path[i][0]), lng: parseFloat(path[i][1])};
+                        //pathCoordinates.push(myLatLng);
+                    } );
+
+                    var polygon = new mxn.Polyline(polyPoints);
+                    polygon.setClosed(false);
+                    polygon.setColor(color);
+                    polygon.setWidth(3);
+                    map.addPolyline(polygon);
+                    /*
+                    var myPath = new google.maps.Polyline({
+                        path: pathCoordinates,
+                        geodesic: true,
+                        strokeColor: color,
+                        strokeOpacity: 0.3,
+                        strokeWeight: 4
+                    });
+                    */
+                    //myPath.setMap(map);
+                    //map.polylines.push(myPath);
+                    //zoomToObject(myPath);
+                }
+            });
+            return false;
+        }
+
+
+        function updateMarkers() {
+            var url="?";
+            url+='&ajax=1&op=getmarkers';
+            $.ajax({
+                url: url
+            }).done(function(data) {
+                var obj=jQuery.parseJSON(data);
+                var markers=obj.MARKERS;
+                var markersCnt = markers.length;
+
+                for(var i=0;i<markersCnt;i++) {
+                    var marker=markers[i];
+                    var temp_id=marker.ID;
+
+                    if (checkMarkerExists(temp_id)) {
+                        var mk=getMarkerIndex(temp_id);
+                        map.removeMarker(map.markers[mk]);
+                    }
+
+                        var mapMarker = new mxn.Marker( new mxn.LatLonPoint(marker.LAT, marker.LON));
+                        mapMarker.temp_id = temp_id;
+                        mapMarker.setIcon('http://labs.google.com/ridefinder/images/mm_20_'+marker.COLOR+'.png');
+                        mapMarker.setLabel(marker.NAME);
+                        mapMarker.setInfoBubble(marker.HTML);
+                        map.addMarker(mapMarker);
+                        map.markers.push(mapMarker);
+                }
+                updateTimeOut=setTimeout('updateMarkers();', 30*1000);
+
+            });
+            return false;
+        }
+
+        var map;
+
+        [#if LATEST_LAT!=""#]
+        var startLat=[#LATEST_LAT#];
+        [#else#]
+        var startLat=53.901506;
+        [#endif#]
+
+        [#if LATEST_LON!=""#]
+        var startLon=[#LATEST_LON#];
+        [#else#]
+        var startLon=27.565269;
+        [#endif#]
+
+        $(document).ready(function(){
+
+            map = new mxn.Mapstraction('map', 'openlayers');
+            var latlon = new mxn.LatLonPoint(startLat,startLon);
+            map.setCenterAndZoom(latlon, 10);
+            //map.addLargeControls()
+
+            map.markers = new Array();
+            map.polylines = new Array();
+
+
+            /*
+            var myLatlng = new google.maps.LatLng(startLat,startLon);
+            var mapOptions = {
+                zoom: 16,
+                center: myLatlng,
+                mapTypeId: "OSM",
+                mapTypeControl: false,
+                streetViewControl: false
+            };
+            map = new google.maps.Map(document.getElementById('map'), mapOptions);
+            map.mapTypes.set("OSM", new google.maps.ImageMapType({
+                getTileUrl: function(coord, zoom) {
+                    var tilesPerGlobe = 1 << zoom;
+                    var x = coord.x % tilesPerGlobe;
+                    if (x < 0) {
+                        x = tilesPerGlobe+x;
+                    }
+                    return "https://tile.openstreetmap.org/" + zoom + "/" + x + "/" + coord.y + ".png";
+                },
+                tileSize: new google.maps.Size(256, 256),
+                name: "OpenStreetMap",
+                maxZoom: 18
+            }));
+
+
+            [#if LATEST_LAT=""#]
+            // HTML5 геолокация
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var pos = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+
+                    map.setCenter(pos);
+                }, function() {
+                    // ошибка геолокации
+                });
+            }
+            [#endif#]
+        */
+
+            updateMarkers();
+            setTimeout('map.autoCenterAndZoom();',10*1000);
+            //resizeMap();
+            [#begin DEVICES#]
+            updateRoute([#ID#], '[#COLOR#]');
+            [#end DEVICES#]
+            updateLocations();
+        });
+
+
+        function legendClicked(id, color) {
+            for (var i=0, marker; marker=map.markers[i]; i++){
+                marker.setMap(null);
+            }
+            map.markers = [];
+            updateMarkers();
+            for (var j=0, polyline; polyline=map.polylines[j]; j++){
+                polyline.setMap(null);
+            }
+            map.polylines = [];
+            updateRoute(id, color);
+            return false;
+        }
+
+    </script>
+
+    [#inc action_usual_controls.html#]
+
+    <div id="map" style="width: 100%; height: 620px;"></div>
