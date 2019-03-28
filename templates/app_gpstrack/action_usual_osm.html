@@ -3,30 +3,24 @@
 
     <script type="text/javascript" language="javascript">
 
-        var updateTimeOut;
+        var updateTimeOut<#UNIQ#>;
 
-        function resizeMap() {
-            $('#map').css({'height':(($(document).height())-40)+'px', 'width':'100%'});
-            return false;
-        }
-
-        function checkMarkerExists(temp_id) {
-            for (var i=0, marker; marker=map.markers[i]; i++){
+        function checkMarkerExists<#UNIQ#>(temp_id) {
+            for (var i=0, marker; marker=map<#UNIQ#>.markers[i]; i++){
                 if (marker.temp_id==temp_id) return true;
             }
             return false;
         }
 
-        function getMarkerIndex(temp_id) {
-            for (var i=0, marker; marker=map.markers[i]; i++){
+        function getMarkerIndex<#UNIQ#>(temp_id) {
+            for (var i=0, marker; marker=map<#UNIQ#>.markers[i]; i++){
                 if (marker.temp_id==temp_id) return i;
             }
             return false;
         }
 
-        function updateLocations() {
-            var url="?";
-            url+='&ajax=1&op=getlocations';
+        function updateLocations<#UNIQ#>() {
+            var url='<#ROOTHTML#>ajax/app_gpstrack.html?ajax=1&op=getlocations';
 
             $.ajax({
                 url: url
@@ -42,24 +36,8 @@
                         var center = new mxn.LatLonPoint(parseFloat(location.LAT),parseFloat(location.LON));
                         var rad = new mxn.Radius(center, 10);
                         var poly = rad.getPolyline(Math.round(parseFloat(location.RANGE)/1000), '#F00014');
-                        map.addPolyline(poly);
-                        /*
-                        var location = locations[i];
-                        var temp_id  = location.ID;
-                        var myLatLng = {lat: parseFloat(location.LAT), lng: parseFloat(location.LON)};
-                        var myCircle = new google.maps.Circle({
-                            temp_id: temp_id,
-                            center: myLatLng,
-                            radius: parseFloat(location.RANGE),
-                            map: map,
-                            title: location.TITLE,
-                            strokeColor: '#0000FF',
-                            strokeOpacity: 0.8,
-                            strokeWeight: 2,
-                            fillColor: '#0000FF',
-                            fillOpacity: 0.35,
-                        });
-                        */
+                        map<#UNIQ#>.addPolyline(poly);
+
                     }
                 }
             });
@@ -68,24 +46,14 @@
             return false;
         }
 
-        function zoomToObject(obj){
-            var bounds = new google.maps.LatLngBounds();
-            var points = obj.getPath().getArray();
-            for (var n = 0; n < points.length ; n++){
-                bounds.extend(points[n]);
-            }
-            map.fitBounds(bounds);
-        }
-
-        function updateRoute(device_id, color) {
-            var url="?";
-            url+='&ajax=1&op=getroute&period=[#PERIOD#]&from=[#FROM#]&to=[#TO#]&device_id='+device_id;
+        function updateRoute<#UNIQ#>(device_id, color) {
+            var url='<#ROOTHTML#>ajax/app_gpstrack.html?op=getroute&period=[#PERIOD#]&from=[#FROM#]&to=[#TO#]&device_id='+device_id;
 
             $.ajax({
                 url: url
             }).done(function(data) {
                 var obj=jQuery.parseJSON(data);
-                if (obj.PATH.length>0) {
+                if ((typeof obj.PATH!=='undefined') && (obj.PATH.length>0)) {
 
                     var path=obj.PATH;
                     var polyPoint;
@@ -102,28 +70,15 @@
                     polygon.setClosed(false);
                     polygon.setColor(color);
                     polygon.setWidth(3);
-                    map.addPolyline(polygon);
-                    /*
-                    var myPath = new google.maps.Polyline({
-                        path: pathCoordinates,
-                        geodesic: true,
-                        strokeColor: color,
-                        strokeOpacity: 0.3,
-                        strokeWeight: 4
-                    });
-                    */
-                    //myPath.setMap(map);
-                    //map.polylines.push(myPath);
-                    //zoomToObject(myPath);
+                    map<#UNIQ#>.addPolyline(polygon);
+
                 }
             });
             return false;
         }
 
-
-        function updateMarkers() {
-            var url="?";
-            url+='&ajax=1&op=getmarkers';
+        function updateMarkers<#UNIQ#>() {
+            var url='<#ROOTHTML#>ajax/app_gpstrack.html?op=getmarkers&device_id=<#DEVICE_ID#>&action=<#ACTION#>';
             $.ajax({
                 url: url
             }).done(function(data) {
@@ -135,118 +90,118 @@
                     var marker=markers[i];
                     var temp_id=marker.ID;
 
-                    if (checkMarkerExists(temp_id)) {
-                        var mk=getMarkerIndex(temp_id);
-                        map.removeMarker(map.markers[mk]);
+                    if (checkMarkerExists<#UNIQ#>(temp_id)) {
+                        var mk=getMarkerIndex<#UNIQ#>(temp_id);
+                        map<#UNIQ#>.removeMarker(map<#UNIQ#>.markers[mk]);
+                        map<#UNIQ#>.markers.splice(mk,1);
                     }
-
                         var mapMarker = new mxn.Marker( new mxn.LatLonPoint(marker.LAT, marker.LON));
                         mapMarker.temp_id = temp_id;
                         mapMarker.setIcon('http://labs.google.com/ridefinder/images/mm_20_'+marker.COLOR+'.png');
                         mapMarker.setLabel(marker.NAME);
                         mapMarker.setInfoBubble(marker.HTML);
-                        map.addMarker(mapMarker);
-                        map.markers.push(mapMarker);
+                        map<#UNIQ#>.addMarker(mapMarker);
+                        map<#UNIQ#>.markers.push(mapMarker);
                 }
-                updateTimeOut=setTimeout('updateMarkers();', 30*1000);
+                [#if ACTION="track"#]
+                updateTimeOut<#UNIQ#>=setTimeout('updateMarkers<#UNIQ#>();', 5*1000);
+                map<#UNIQ#>.autoCenterAndZoom();
+                [#else#]
+                updateTimeOut<#UNIQ#>=setTimeout('updateMarkers<#UNIQ#>();', 30*1000);
+                [#endif#]
 
             });
             return false;
         }
 
-        var map;
+        var map<#UNIQ#>;
 
         [#if LATEST_LAT!=""#]
-        var startLat=[#LATEST_LAT#];
+        var startLat<#UNIQ#>=[#LATEST_LAT#];
         [#else#]
-        var startLat=53.901506;
+        var startLat<#UNIQ#>=53.901506;
         [#endif#]
 
         [#if LATEST_LON!=""#]
-        var startLon=[#LATEST_LON#];
+        var startLon<#UNIQ#>=[#LATEST_LON#];
         [#else#]
-        var startLon=27.565269;
+        var startLon<#UNIQ#>=27.565269;
         [#endif#]
 
         $(document).ready(function(){
 
-            map = new mxn.Mapstraction('map', 'openlayers');
-            var latlon = new mxn.LatLonPoint(startLat,startLon);
-            map.setCenterAndZoom(latlon, 10);
+            map<#UNIQ#> = new mxn.Mapstraction('map<#UNIQ#>', 'openlayers');
+            var latlon = new mxn.LatLonPoint(startLat<#UNIQ#>,startLon<#UNIQ#>);
+            map<#UNIQ#>.setCenterAndZoom(latlon, 10);
             //map.addLargeControls()
 
-            map.markers = new Array();
-            map.polylines = new Array();
+            map<#UNIQ#>.markers = new Array();
+            map<#UNIQ#>.polylines = new Array();
 
+            updateMarkers<#UNIQ#>();
 
-            /*
-            var myLatlng = new google.maps.LatLng(startLat,startLon);
-            var mapOptions = {
-                zoom: 16,
-                center: myLatlng,
-                mapTypeId: "OSM",
-                mapTypeControl: false,
-                streetViewControl: false
-            };
-            map = new google.maps.Map(document.getElementById('map'), mapOptions);
-            map.mapTypes.set("OSM", new google.maps.ImageMapType({
-                getTileUrl: function(coord, zoom) {
-                    var tilesPerGlobe = 1 << zoom;
-                    var x = coord.x % tilesPerGlobe;
-                    if (x < 0) {
-                        x = tilesPerGlobe+x;
-                    }
-                    return "https://tile.openstreetmap.org/" + zoom + "/" + x + "/" + coord.y + ".png";
-                },
-                tileSize: new google.maps.Size(256, 256),
-                name: "OpenStreetMap",
-                maxZoom: 18
-            }));
+            [#if ACTION!="track"#]
 
-
-            [#if LATEST_LAT=""#]
-            // HTML5 геолокация
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    var pos = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    };
-
-                    map.setCenter(pos);
-                }, function() {
-                    // ошибка геолокации
-                });
-            }
-            [#endif#]
-        */
-
-            updateMarkers();
-            setTimeout('map.autoCenterAndZoom();',10*1000);
-            //resizeMap();
+            [#if DEVICE_ID!=""#]
             [#begin DEVICES#]
-            updateRoute([#ID#], '[#COLOR#]');
+            [#if ID="<#DEVICE_ID#>"#]
+            updateRoute<#UNIQ#>([#ID#], '[#COLOR#]');
+            [#endif ID#]
             [#end DEVICES#]
-            updateLocations();
+            [#else DEVICE_ID#]
+            [#begin DEVICES#]
+            updateRoute<#UNIQ#>([#ID#], '[#COLOR#]');
+            [#end DEVICES#]
+            [#endif DEVICE_ID#]
+            updateLocations<#UNIQ#>();
+
+            setTimeout('map<#UNIQ#>.autoCenterAndZoom();',10*1000);
+
+            [#else ACTION#]
+
+            //setTimeout('zoomToDevice(<#DEVICE_ID#>);',5*1000);
+
+
+            [#endif ACTION#]
+
+
+
         });
 
 
-        function legendClicked(id, color) {
-            for (var i=0, marker; marker=map.markers[i]; i++){
-                marker.setMap(null);
+        function zoomToDevice<#UNIQ#>(id) {
+            if (id==0) return;
+            for (var i=0; i<map<#UNIQ#>.markers.length; i++){
+                if (map<#UNIQ#>.markers[i].temp_id==id) {
+                    //alert('found!');
+                    console.log(map<#UNIQ#>.markers[i]);
+                    map<#UNIQ#>.setCenter(map<#UNIQ#>.markers[i].location);
+                }
             }
-            map.markers = [];
-            updateMarkers();
-            for (var j=0, polyline; polyline=map.polylines[j]; j++){
-                polyline.setMap(null);
+        }
+
+        function legendClicked<#UNIQ#>(id, color) {
+            for (var i=0; i<map<#UNIQ#>.markers.length; i++){
+                //marker.setMap(null);
+                if (map<#UNIQ#>.markers[i].temp_id==id) {
+                    //map.removeMarker(map.markers[i]);
+                }
             }
-            map.polylines = [];
-            updateRoute(id, color);
+
+            return false;
+        }
+
+        function resetMapZoom<#UNIQ#>() {
+            map<#UNIQ#>.autoCenterAndZoom();
             return false;
         }
 
     </script>
 
-    [#inc action_usual_controls.html#]
+[#if ACTION!="track"#]
+[#inc action_usual_controls.html#]
+<div id="map<#UNIQ#>" style="width: 100%; height: 620px;"></div>
+[#else#]
 
-    <div id="map" style="width: 100%; height: 620px;"></div>
+<div id="map<#UNIQ#>" style="width: [#WIDTH#]; height: [#HEIGHT#];"></div>
+[#endif#]

@@ -92,7 +92,7 @@ function getParams() {
 */
 function run() {
 
- Define('DEF_ACTION_TYPE_OPTIONS', '1='.LANG_GPSTRACK_ACTION_ENTERING.'|0='.LANG_GPSTRACK_ACTION_LEAVING.'|2='.LANG_GPSTRACK_ACTION_ENTERING_OR_LEAVING); // options for 'ACTION_TYPE'
+ @Define('DEF_ACTION_TYPE_OPTIONS', '1='.LANG_GPSTRACK_ACTION_ENTERING.'|0='.LANG_GPSTRACK_ACTION_LEAVING.'|2='.LANG_GPSTRACK_ACTION_ENTERING_OR_LEAVING); // options for 'ACTION_TYPE'
 
  global $session;
   $out=array();
@@ -167,7 +167,7 @@ function admin(&$out) {
   $out['OK']=1;
  }
 
- if ($this->data_source == 'preview' || gr('ajax')) {
+ if ($this->data_source == 'preview' || gr('ajax') || $this->ajax) {
   $this->usual($out);
   return;
  }

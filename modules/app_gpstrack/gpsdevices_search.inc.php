@@ -45,7 +45,7 @@
   if (!$sortby_gpsdevices) $sortby_gpsdevices="TITLE";
   $out['SORTBY']=$sortby_gpsdevices;
   // SEARCH RESULTS
-  $res=SQLSelect("SELECT * FROM gpsdevices WHERE $qry ORDER BY ".$sortby_gpsdevices);
+  $res=SQLSelect("SELECT gpsdevices.*,users.NAME FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE $qry ORDER BY ".$sortby_gpsdevices);
   if ($res[0]['ID']) {
    colorizeArray($res);
    $total=count($res);

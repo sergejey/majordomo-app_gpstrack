@@ -81,3 +81,11 @@
 <input type="hidden" name="data_source" value="<#DATA_SOURCE#>">
 </form>
 
+[#if ID!=""#]
+<pre>
+    &#091;#module name="app_gpstrack" device_id="<#ID#>" action="track" width="100%" height="300px"#&#093;
+</pre>
+
+ [#module name="app_gpstrack" device_id="<#ID#>" action="track" width="100%" height="300px"#]
+
+[#endif ID#]

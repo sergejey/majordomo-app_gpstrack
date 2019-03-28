@@ -1,14 +1,18 @@
-<div id="add_controls">
-<table border="0" cellspacing=3 cellpadding=3>
-    <tr>
-        [#begin DEVICES#]
-        <td>
-            <span style="background-color:[#COLOR#]">&nbsp;&nbsp;</span>
-            <a href="#" onClick="return legendClicked([#ID#], '[#COLOR#]');" class="btn btn-sm">[#NAME#] ([#TITLE#])</a>
-        </td>
-        [#end DEVICES#]
-        <form action="?" method="get">
-            <td>
+<div id="add_controls" class="row">
+    <div class="col-md-10">
+<form class="form-inline" method="get" action="?">
+
+    <div class="form-group">
+        <#LANG_USER#>:
+        </div>
+        <div class="form-group">
+            <select name="device_id" class="form-control input-sm" onchange="zoomToDevice(this.value);">
+                <option value="0"><#LANG_ALL#></option>
+                [#begin DEVICES#]
+                <option value="[#ID#]"[#if ID="<#DEVICE_ID#>"#] selected[#endif#] style="background-color:[#COLOR#]">[#NAME#] ([#TITLE#])</option>
+                [#end DEVICES#]
+            </select>
+        </div>
                 <script language="javascript">
                     function periodUpdated() {
                         if ($('#selPeriod').val()=='custom') {
@@ -19,9 +23,10 @@
                         return false;
                     }
                 </script>
-                <#LANG_PERIOD#>:
-            </td>
-            <td>
+
+    <div class="form-group"><#LANG_PERIOD#>:</div>
+
+                    <div class="form-group">
                 <select name="period" onChange='periodUpdated();' id='selPeriod' class="form-control input-sm">
                     <option value="today"[#if PERIOD="today"#] selected[#endif#]><#LANG_PERIOD_TODAY#>
                     <option value="day"[#if PERIOD="day"#] selected[#endif#]><#LANG_PERIOD_DAY#>
@@ -29,9 +34,8 @@
                     <option value="month"[#if PERIOD="month"#] selected[#endif#]><#LANG_PERIOD_MONTH#>
                     <option value="custom"[#if PERIOD="custom"#] selected[#endif#]><#LANG_PERIOD_CUSTOM#>...
                 </select>
-            </td>
-            <td>
- <span id='customDates' [#if PERIOD!="custom"#]style="display:none"[#endif#]>
+                    </div>
+ <div class="form-group" id='customDates' [#if PERIOD!="custom"#]style="display:none"[#endif#]>
  <table width="100%" border="0">
   <tr>
    <td>
@@ -47,13 +51,26 @@
   </td>
   </tr>
  </table>
- </span>
-            </td>
-            <td>
-                <input type="submit" name="Update" value="<#LANG_SEARCH#>" class="btn btn-sm">
-            </td>
+ </div>
+                    <div class="form-group">
+                <input type="submit" name="Update" value="<#LANG_SEARCH#>" class="btn  btn-default btn-sm">
+                    </div>
+
             <input type="hidden" name="data_source" value="<#DATA_SOURCE#>">
         </form>
+</div>
+    <div class="col-md-2">
+        <a href="#" onclick="resetMapZoom();return false;" class="btn btn-default btn-sm">Reset Zoom</a>
+    </div>
+</div>
+&nbsp;
+<!--#
+<table class="table">
+    <tr>
+        [#begin DEVICES#]
+        <td><span style="background-color:[#COLOR#]">&nbsp;&nbsp;</span>
+            <a href="#" onClick="return legendClicked([#ID#], '[#COLOR#]');" class="btn btn-sm">[#NAME#] ([#TITLE#])</a></td>
+        [#end DEVICES#]
     </tr>
 </table>
-</div>
+#-->
