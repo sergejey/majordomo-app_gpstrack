@@ -185,8 +185,10 @@ if (isset($_REQUEST['latitude']))
          setGlobal($user['LINKED_OBJECT'] . '.Coordinates', $rec['LAT'] . ',' . $rec['LON']);
          setGlobal($user['LINKED_OBJECT'] . '.CoordinatesUpdated', date('H:i'));
          setGlobal($user['LINKED_OBJECT'] . '.CoordinatesUpdatedTimestamp', time());
-         setGlobal($user['LINKED_OBJECT'] . '.BattLevel', $rec['BATTLEVEL']);
-         setGlobal($user['LINKED_OBJECT'] . '.Charging', $rec['CHARGING']);
+         if($rec['BATTLEVEL']>0){ 
+            setGlobal($user['LINKED_OBJECT'] . '.BattLevel', $rec['BATTLEVEL']); 
+            setGlobal($user['LINKED_OBJECT'] . '.Charging', $rec['CHARGING']);
+         }
          
          $sqlQuery = "SELECT *
                         FROM gpslog
