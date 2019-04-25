@@ -14,7 +14,7 @@ if (gr('action')) {
     $this->action=gr('action');
 }
 
-$colors = array('red', 'blue', 'green', 'orange', 'brown', 'gray', 'yellow', 'white');
+$colors = array('#BF616A','#D08770','#EBCB8B','#A3BE8C','#B48EAD','red', 'blue', 'green', 'orange', 'brown', 'gray', 'yellow', 'white');
 
 $qry = 1;
 
@@ -59,9 +59,9 @@ if ($device_id) {
 }
 
 if ($ajax && $device_id) {
-    $out['DEVICES'] = SQLSelect("SELECT gpsdevices.*, users.NAME, users.USERNAME FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE gpsdevices.ID=$device_id ORDER BY users.NAME");
+    $out['DEVICES'] = SQLSelect("SELECT gpsdevices.*, users.NAME, users.USERNAME, users.AVATAR FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE gpsdevices.ID=$device_id ORDER BY users.NAME");
 } else {
-    $out['DEVICES'] = SQLSelect("SELECT gpsdevices.*, users.NAME, users.USERNAME FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE 1 ORDER BY users.NAME");
+    $out['DEVICES'] = SQLSelect("SELECT gpsdevices.*, users.NAME, users.USERNAME, users.AVATAR FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE 1 ORDER BY users.NAME");
 }
 $res_devices=array();
 $total = count($out['DEVICES']);
