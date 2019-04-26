@@ -391,9 +391,14 @@ if (isset($_REQUEST['latitude']))
       }
    }
 }
-
 if ($user['LINKED_OBJECT'] && !$location_found)
-   setGlobal($user['LINKED_OBJECT'] . '.seenAt', '');
+{
+   $address = $_REQUEST['address'];
+   if ($address)
+      setGlobal($user['LINKED_OBJECT'] . '.seenAt', $address);
+   else
+      setGlobal($user['LINKED_OBJECT'] . '.seenAt', '');
+}
 
 $sqlQuery = "SELECT *, DATE_FORMAT(ADDED, '%H:%i') as DAT
                FROM shouts
