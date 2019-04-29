@@ -59,14 +59,15 @@ if ($device_id) {
 }
 
 if ($ajax && $device_id) {
-    $out['DEVICES'] = SQLSelect("SELECT gpsdevices.*, users.NAME, users.USERNAME, users.AVATAR FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE gpsdevices.ID=$device_id ORDER BY users.NAME");
+    $out['DEVICES'] = SQLSelect("SELECT gpsdevices.*, users.NAME, users.USERNAME, users.AVATAR, users.COLOR FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE gpsdevices.ID=$device_id ORDER BY users.NAME");
 } else {
-    $out['DEVICES'] = SQLSelect("SELECT gpsdevices.*, users.NAME, users.USERNAME, users.AVATAR FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE 1 ORDER BY users.NAME");
+    $out['DEVICES'] = SQLSelect("SELECT gpsdevices.*, users.NAME, users.USERNAME, users.AVATAR, users.COLOR FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE 1 ORDER BY users.NAME");
 }
 $res_devices=array();
 $total = count($out['DEVICES']);
 for ($i = 0; $i < $total; $i++) {
-    $out['DEVICES'][$i]['COLOR'] = $colors[$i];
+    if (!$out['DEVICES'][$i]['COLOR'])
+        $out['DEVICES'][$i]['COLOR'] = $colors[$i];
     $update_tm=strtotime($out['DEVICES'][$i]['UPDATED']);
     if ($this->action=='track' && !$this->device_id) {
         if ((time()-$update_tm)<24*60*60) {
