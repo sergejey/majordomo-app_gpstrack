@@ -11,49 +11,12 @@ if ($clear_log) {
 
 global $optimize_log;
 if ($optimize_log) {
-    set_time_limit(6000);
-    $records = SQLSelect("SELECT gpslog.ID, gpslog.DEVICEID, gpslog.LOCATION_ID, gpsdevices.ID AS GPS_DEVICE_ID FROM gpslog LEFT JOIN gpsdevices ON gpslog.DEVICE_ID=gpsdevices.ID ORDER BY gpslog.DEVICEID, gpslog.ADDED DESC");
-    $total = count($records);
-    $to_delete = array();
-    for ($i = 1; $i < $total - 1; $i++) {
-        if (!$records[$i]['GPS_DEVICE_ID']) {
-            SQLExec("DELETE FROM gpslog WHERE ID=" . $records[$i]['ID']);
-            continue;
-        }
-        if (!$records[$i]['LOCATION_ID']) continue;
-        if ($records[$i]['LOCATION_ID'] == $records[$i + 1]['LOCATION_ID'] && $records[$i]['LOCATION_ID'] == $records[$i - 1]['LOCATION_ID']
-            && $records[$i]['GPS_DEVICE_ID'] == $records[$i + 1]['GPS_DEVICE_ID'] && $records[$i]['GPS_DEVICE_ID'] == $records[$i - 1]['GPS_DEVICE_ID']
-        ) {
-            //$to_delete[]=$records[$i]['ID'];
-            SQLExec("DELETE FROM gpslog WHERE ID=" . $records[$i]['ID']);
-        }
-
-        if ($i % 200 == 0) {
-            echo ".";
-            echo str_repeat(' ', 1024);
-            flush();
-            flush();
-        }
-
-    }
-    /*
-    if ($to_delete[0]) {
-     $total=count($to_delete);
-     for($i=0;$i<$total;$i++) {
-      SQLExec("DELETE FROM gpslog WHERE ID=".$to_delete[$i]);
-     }
-     $this->redirect("?");
-    }
-    */
-    SQLExec("OPTIMIZE TABLE `gpslog`");
-
+    $this->optimize_log(1);
     echo " DONE";
     echo str_repeat(' ', 1024);
     flush();
     flush();
-
     exit;
-
 }
 
 global $session;

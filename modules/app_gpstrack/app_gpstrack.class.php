@@ -1,405 +1,489 @@
 <?php
 /**
-* GPS Track 
-*
-* App_gpstrack
-*
-* @package MajorDoMo
-* @author Serge Dzheigalo <jey@tut.by> http://smartliving.ru/
-* @version 0.2 (wizard, 14:07:59 [Jul 25, 2011])
-*/
+ * GPS Track
+ *
+ * App_gpstrack
+ *
+ * @package MajorDoMo
+ * @author Serge Dzheigalo <jey@tut.by> http://smartliving.ru/
+ * @version 0.2 (wizard, 14:07:59 [Jul 25, 2011])
+ */
 //
 //
-class app_gpstrack extends module {
-/**
-* app_gpstrack
-*
-* Module class constructor
-*
-* @access private
-*/
-function app_gpstrack() {
-  $this->name="app_gpstrack";
-  $this->title="<#LANG_APP_GPSTRACK#>";
-  $this->module_category="<#LANG_SECTION_APPLICATIONS#>";
-  $this->checkInstalled();
-}
-/**
-* saveParams
-*
-* Saving module parameters
-*
-* @access public
-*/
-function saveParams($data=0) {
- $p=array();
- if (IsSet($this->id)) {
-  $p["id"]=$this->id;
- }
- if (IsSet($this->view_mode)) {
-  $p["view_mode"]=$this->view_mode;
- }
- if (IsSet($this->edit_mode)) {
-  $p["edit_mode"]=$this->edit_mode;
- }
- if (IsSet($this->data_source)) {
-  $p["data_source"]=$this->data_source;
- }
- if (IsSet($this->tab)) {
-  $p["tab"]=$this->tab;
- }
- return parent::saveParams($p);
-}
-/**
-* getParams
-*
-* Getting module parameters from query string
-*
-* @access public
-*/
-function getParams() {
-  global $id;
-  global $mode;
-  global $view_mode;
-  global $edit_mode;
-  global $data_source;
-  global $tab;
-  if (isset($id)) {
-   $this->id=$id;
-  }
-  if (isset($mode)) {
-   $this->mode=$mode;
-  }
-  if (isset($view_mode)) {
-   $this->view_mode=$view_mode;
-  }
-  if (isset($edit_mode)) {
-   $this->edit_mode=$edit_mode;
-  }
-  if (isset($data_source)) {
-   $this->data_source=$data_source;
-  }
-  if (isset($tab)) {
-   $this->tab=$tab;
-  }
-}
-/**
-* Run
-*
-* Description
-*
-* @access public
-*/
-function run() {
+class app_gpstrack extends module
+{
+    /**
+     * app_gpstrack
+     *
+     * Module class constructor
+     *
+     * @access private
+     */
+    function app_gpstrack()
+    {
+        $this->name = "app_gpstrack";
+        $this->title = "<#LANG_APP_GPSTRACK#>";
+        $this->module_category = "<#LANG_SECTION_APPLICATIONS#>";
+        $this->checkInstalled();
+    }
 
- @Define('DEF_ACTION_TYPE_OPTIONS', '1='.LANG_GPSTRACK_ACTION_ENTERING.'|0='.LANG_GPSTRACK_ACTION_LEAVING.'|2='.LANG_GPSTRACK_ACTION_ENTERING_OR_LEAVING); // options for 'ACTION_TYPE'
+    /**
+     * saveParams
+     *
+     * Saving module parameters
+     *
+     * @access public
+     */
+    function saveParams($data = 0)
+    {
+        $p = array();
+        if (IsSet($this->id)) {
+            $p["id"] = $this->id;
+        }
+        if (IsSet($this->view_mode)) {
+            $p["view_mode"] = $this->view_mode;
+        }
+        if (IsSet($this->edit_mode)) {
+            $p["edit_mode"] = $this->edit_mode;
+        }
+        if (IsSet($this->data_source)) {
+            $p["data_source"] = $this->data_source;
+        }
+        if (IsSet($this->tab)) {
+            $p["tab"] = $this->tab;
+        }
+        return parent::saveParams($p);
+    }
 
- global $session;
-  $out=array();
-  if ($this->action=='admin') {
-   $this->admin($out);
-  } else {
-   $this->usual($out);
-  }
-  if (IsSet($this->owner->action)) {
-   $out['PARENT_ACTION']=$this->owner->action;
-  }
-  if (IsSet($this->owner->name)) {
-   $out['PARENT_NAME']=$this->owner->name;
-  }
-  $out['VIEW_MODE']=$this->view_mode;
-  $out['EDIT_MODE']=$this->edit_mode;
-  $out['MODE']=$this->mode;
-  $out['ACTION']=$this->action;
-  $out['DATA_SOURCE']=$this->data_source;
-  $out['TAB']=$this->tab;
-  if (IsSet($this->device_id)) {
-   $out['IS_SET_DEVICE_ID']=1;
-  }
-  if (IsSet($this->location_id)) {
-   $out['IS_SET_LOCATION_ID']=1;
-  }
-  if (IsSet($this->user_id)) {
-   $out['IS_SET_USER_ID']=1;
-  }
-  if (IsSet($this->location_id)) {
-   $out['IS_SET_LOCATION_ID']=1;
-  }
-  if (IsSet($this->user_id)) {
-   $out['IS_SET_USER_ID']=1;
-  }
-  if (IsSet($this->script_id)) {
-   $out['IS_SET_SCRIPT_ID']=1;
-  }
-  if ($this->single_rec) {
-   $out['SINGLE_REC']=1;
-  }
-  $this->data=$out;
-  $p=new parser(DIR_TEMPLATES.$this->name."/".$this->name.".html", $this->data, $this);
-  $this->result=$p->result;
-}
-/**
-* BackEnd
-*
-* Module backend
-*
-* @access public
-*/
-function admin(&$out) {
- $this->getConfig();
- $out['MAPPROVIDER'] = $this->config['MAPPROVIDER'];
- $out['MAPTYPE'] = $this->config['MAPTYPE'];
- $out['MAX_ACCURACY'] = $this->config['MAX_ACCURACY'];
- $out['API_KEY'] = $this->config['API_KEY'];
- if ($this->view_mode=='update_settings') {
-   global $mapprovider;
-   $this->config['MAPPROVIDER']=$mapprovider;
-   global $maptype;
-   $this->config['MAPTYPE']=$maptype;
-   global $max_accuracy;
-   $this->config['MAX_ACCURACY']=$max_accuracy;
-   global $api_key;
-   $this->config['API_KEY']=$api_key;
-   $this->saveConfig();
-   $this->redirect("?data_source=gpsoptions&ok=1");
- }
- if ($_GET['ok']) {
-  $out['OK']=1;
- }
+    /**
+     * getParams
+     *
+     * Getting module parameters from query string
+     *
+     * @access public
+     */
+    function getParams()
+    {
+        global $id;
+        global $mode;
+        global $view_mode;
+        global $edit_mode;
+        global $data_source;
+        global $tab;
+        if (isset($id)) {
+            $this->id = $id;
+        }
+        if (isset($mode)) {
+            $this->mode = $mode;
+        }
+        if (isset($view_mode)) {
+            $this->view_mode = $view_mode;
+        }
+        if (isset($edit_mode)) {
+            $this->edit_mode = $edit_mode;
+        }
+        if (isset($data_source)) {
+            $this->data_source = $data_source;
+        }
+        if (isset($tab)) {
+            $this->tab = $tab;
+        }
+    }
 
- if ($this->data_source == 'preview' || gr('ajax') || $this->ajax) {
-  $this->usual($out);
-  return;
- }
+    /**
+     * Run
+     *
+     * Description
+     *
+     * @access public
+     */
+    function run()
+    {
 
- if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
-  $out['SET_DATASOURCE']=1;
- }
- if ($this->data_source=='gpslog' || $this->data_source=='') {
-  if ($this->view_mode=='' || $this->view_mode=='search_gpslog') {
-   $this->search_gpslog($out);
-  }
-  if ($this->view_mode=='edit_gpslog') {
-   $this->edit_gpslog($out, $this->id);
-  }
-  if ($this->view_mode=='delete_gpslog') {
-   $this->delete_gpslog($this->id);
-   $this->redirect("?data_source=gpslog");
-  }
- }
- if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
-  $out['SET_DATASOURCE']=1;
- }
- if ($this->data_source=='gpslocations') {
-  if ($this->view_mode=='' || $this->view_mode=='search_gpslocations') {
-   $this->search_gpslocations($out);
-  }
-  if ($this->view_mode=='edit_gpslocations') {
-   $this->edit_gpslocations($out, $this->id);
-  }
-  if ($this->view_mode=='delete_gpslocations') {
-   $this->delete_gpslocations($this->id);
-   $this->redirect("?data_source=gpslocations");
-  }
- }
- if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
-  $out['SET_DATASOURCE']=1;
- }
- if ($this->data_source=='gpsdevices') {
-  if ($this->view_mode=='' || $this->view_mode=='search_gpsdevices') {
-   $this->search_gpsdevices($out);
-  }
-  if ($this->view_mode=='edit_gpsdevices') {
-   $this->edit_gpsdevices($out, $this->id);
-  }
-  if ($this->view_mode=='delete_gpsdevices') {
-   $this->delete_gpsdevices($this->id);
-   $this->redirect("?data_source=gpsdevices");
-  }
- }
- if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
-  $out['SET_DATASOURCE']=1;
- }
- if ($this->data_source=='gpsactions') {
-  if ($this->view_mode=='' || $this->view_mode=='search_gpsactions') {
-   $this->search_gpsactions($out);
-  }
-  if ($this->view_mode=='edit_gpsactions') {
-   $this->edit_gpsactions($out, $this->id);
-  }
-  if ($this->view_mode=='delete_gpsactions') {
-   $this->delete_gpsactions($this->id);
-   $this->redirect("?data_source=gpsactions");
-  }
- }
-}
-/**
-* FrontEnd
-*
-* Module frontend
-*
-* @access public
-*/
-function usual(&$out) {
- $this->getConfig();
- $out['MAPPROVIDER'] = $this->config['MAPPROVIDER'];
- $out['MAPTYPE'] = $this->config['MAPTYPE'];
- $out['MAX_ACCURACY'] = $this->config['MAX_ACCURACY'];
- $out['API_KEY'] = $this->config['API_KEY'];
- require(DIR_MODULES.$this->name.'/usual.inc.php');
-}
-/**
-* gpslog search
-*
-* @access public
-*/
- function search_gpslog(&$out) {
-  require(DIR_MODULES.$this->name.'/gpslog_search.inc.php');
- }
-/**
-* gpslog edit/add
-*
-* @access public
-*/
- function edit_gpslog(&$out, $id) {
-  require(DIR_MODULES.$this->name.'/gpslog_edit.inc.php');
- }
-/**
-* gpslog delete record
-*
-* @access public
-*/
- function delete_gpslog($id) {
-  $rec=SQLSelectOne("SELECT * FROM gpslog WHERE ID='$id'");
-  // some action for related tables
-  SQLExec("DELETE FROM gpslog WHERE ID='".$rec['ID']."'");
- }
-/**
-* gpslocations search
-*
-* @access public
-*/
- function search_gpslocations(&$out) {
-  require(DIR_MODULES.$this->name.'/gpslocations_search.inc.php');
- }
-/**
-* gpslocations edit/add
-*
-* @access public
-*/
- function edit_gpslocations(&$out, $id) {
-  require(DIR_MODULES.$this->name.'/gpslocations_edit.inc.php');
- }
-/**
-* gpslocations delete record
-*
-* @access public
-*/
- function delete_gpslocations($id) {
-  $rec=SQLSelectOne("SELECT * FROM gpslocations WHERE ID='$id'");
-  // some action for related tables
-  SQLExec("DELETE FROM gpslocations WHERE ID='".$rec['ID']."'");
- }
-/**
-* gpsdevices search
-*
-* @access public
-*/
- function search_gpsdevices(&$out) {
-  require(DIR_MODULES.$this->name.'/gpsdevices_search.inc.php');
- }
-/**
-* gpsdevices edit/add
-*
-* @access public
-*/
- function edit_gpsdevices(&$out, $id) {
-  require(DIR_MODULES.$this->name.'/gpsdevices_edit.inc.php');
- }
-/**
-* gpsdevices delete record
-*
-* @access public
-*/
- function delete_gpsdevices($id) {
-  $rec=SQLSelectOne("SELECT * FROM gpsdevices WHERE ID='$id'");
-  // some action for related tables
-  SQLExec("DELETE FROM gpslog WHERE DEVICE_ID='".$rec['ID']."'");
-  SQLExec("DELETE FROM gpsdevices WHERE ID='".$rec['ID']."'");
- }
-/**
-* gpsactions search
-*
-* @access public
-*/
- function search_gpsactions(&$out) {
-  require(DIR_MODULES.$this->name.'/gpsactions_search.inc.php');
- }
-/**
-* gpsactions edit/add
-*
-* @access public
-*/
- function edit_gpsactions(&$out, $id) {
-  require(DIR_MODULES.$this->name.'/gpsactions_edit.inc.php');
- }
-/**
-* gpsactions delete record
-*
-* @access public
-*/
- function delete_gpsactions($id) {
-  $rec=SQLSelectOne("SELECT * FROM gpsactions WHERE ID='$id'");
-  // some action for related tables
-  SQLExec("DELETE FROM gpsactions WHERE ID='".$rec['ID']."'");
- }
-/**
-* Install
-*
-* Module installation routine
-*
-* @access private
-*/
- function install($data='') {
-  parent::install();
-  addClass('GPSLocations');
-  addClassMethod('GPSLocations','userEntered','//$params["USER_OBJECT"]'."\n");
-  addClassMethod('GPSLocations','userLeft','//$params["USER_OBJECT"]'."\n");
-  addClassProperty('GPSLocations','locationTitle');
-  addClassProperty('GPSLocations','latestVisit');
+        @Define('DEF_ACTION_TYPE_OPTIONS', '1=' . LANG_GPSTRACK_ACTION_ENTERING . '|0=' . LANG_GPSTRACK_ACTION_LEAVING . '|2=' . LANG_GPSTRACK_ACTION_ENTERING_OR_LEAVING); // options for 'ACTION_TYPE'
 
-  addClassMethod('Users','enteredLocation','//$params["LOCATION_OBJECT"], $params["LOCATION"]'."\n");
-  addClassMethod('Users','leftLocation','//$params["LOCATION_OBJECT"], $params["LOCATION"]'."\n");
- }
-/**
-* Uninstall
-*
-* Module uninstall routine
-*
-* @access public
-*/
- function uninstall() {
-  SQLExec('DROP TABLE IF EXISTS gpslog');
-  SQLExec('DROP TABLE IF EXISTS gpslocations');
-  SQLExec('DROP TABLE IF EXISTS gpsdevices');
-  SQLExec('DROP TABLE IF EXISTS gpsactions');
-  parent::uninstall();
- }
-/**
-* dbInstall
-*
-* Database installation routine
-*
-* @access private
-*/
- function dbInstall($data) {
-/*
-gpslog - Log
-gpslocations - Locations
-gpsdevices - Devices
-gpsactions - Actions
-*/
-  $data = <<<EOD
+        global $session;
+        $out = array();
+        if ($this->action == 'admin') {
+            $this->admin($out);
+        } else {
+            $this->usual($out);
+        }
+        if (IsSet($this->owner->action)) {
+            $out['PARENT_ACTION'] = $this->owner->action;
+        }
+        if (IsSet($this->owner->name)) {
+            $out['PARENT_NAME'] = $this->owner->name;
+        }
+        $out['VIEW_MODE'] = $this->view_mode;
+        $out['EDIT_MODE'] = $this->edit_mode;
+        $out['MODE'] = $this->mode;
+        $out['ACTION'] = $this->action;
+        $out['DATA_SOURCE'] = $this->data_source;
+        $out['TAB'] = $this->tab;
+        if (IsSet($this->device_id)) {
+            $out['IS_SET_DEVICE_ID'] = 1;
+        }
+        if (IsSet($this->location_id)) {
+            $out['IS_SET_LOCATION_ID'] = 1;
+        }
+        if (IsSet($this->user_id)) {
+            $out['IS_SET_USER_ID'] = 1;
+        }
+        if (IsSet($this->location_id)) {
+            $out['IS_SET_LOCATION_ID'] = 1;
+        }
+        if (IsSet($this->user_id)) {
+            $out['IS_SET_USER_ID'] = 1;
+        }
+        if (IsSet($this->script_id)) {
+            $out['IS_SET_SCRIPT_ID'] = 1;
+        }
+        if ($this->single_rec) {
+            $out['SINGLE_REC'] = 1;
+        }
+        $this->data = $out;
+        $p = new parser(DIR_TEMPLATES . $this->name . "/" . $this->name . ".html", $this->data, $this);
+        $this->result = $p->result;
+    }
+
+    /**
+     * BackEnd
+     *
+     * Module backend
+     *
+     * @access public
+     */
+    function admin(&$out)
+    {
+        $this->getConfig();
+        $out['MAPPROVIDER'] = $this->config['MAPPROVIDER'];
+        $out['MAPTYPE'] = $this->config['MAPTYPE'];
+        $out['MAX_ACCURACY'] = $this->config['MAX_ACCURACY'];
+        $out['AUTO_OPTIMIZE'] = (int)$this->config['AUTO_OPTIMIZE'];
+        $out['API_KEY'] = $this->config['API_KEY'];
+        if ($this->view_mode == 'update_settings') {
+            global $mapprovider;
+            $this->config['MAPPROVIDER'] = $mapprovider;
+            global $maptype;
+            $this->config['MAPTYPE'] = $maptype;
+            global $max_accuracy;
+            $this->config['MAX_ACCURACY'] = $max_accuracy;
+            global $api_key;
+            $this->config['API_KEY'] = $api_key;
+            $this->config['AUTO_OPTIMIZE'] = gr('auto_optimize', 'int');
+            $this->saveConfig();
+            if ($this->config['AUTO_OPTIMIZE']) {
+                subscribeToEvent($this->name, 'HOURLY');
+            }
+            $this->redirect("?data_source=gpsoptions&ok=1");
+        }
+        if ($_GET['ok']) {
+            $out['OK'] = 1;
+        }
+
+        if ($this->data_source == 'preview' || gr('ajax') || $this->ajax) {
+            $this->usual($out);
+            return;
+        }
+
+        if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
+            $out['SET_DATASOURCE'] = 1;
+        }
+        if ($this->data_source == 'gpslog' || $this->data_source == '') {
+            if ($this->view_mode == '' || $this->view_mode == 'search_gpslog') {
+                $this->search_gpslog($out);
+            }
+            if ($this->view_mode == 'edit_gpslog') {
+                $this->edit_gpslog($out, $this->id);
+            }
+            if ($this->view_mode == 'delete_gpslog') {
+                $this->delete_gpslog($this->id);
+                $this->redirect("?data_source=gpslog");
+            }
+        }
+        if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
+            $out['SET_DATASOURCE'] = 1;
+        }
+        if ($this->data_source == 'gpslocations') {
+            if ($this->view_mode == '' || $this->view_mode == 'search_gpslocations') {
+                $this->search_gpslocations($out);
+            }
+            if ($this->view_mode == 'edit_gpslocations') {
+                $this->edit_gpslocations($out, $this->id);
+            }
+            if ($this->view_mode == 'delete_gpslocations') {
+                $this->delete_gpslocations($this->id);
+                $this->redirect("?data_source=gpslocations");
+            }
+        }
+        if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
+            $out['SET_DATASOURCE'] = 1;
+        }
+        if ($this->data_source == 'gpsdevices') {
+            if ($this->view_mode == '' || $this->view_mode == 'search_gpsdevices') {
+                $this->search_gpsdevices($out);
+            }
+            if ($this->view_mode == 'edit_gpsdevices') {
+                $this->edit_gpsdevices($out, $this->id);
+            }
+            if ($this->view_mode == 'delete_gpsdevices') {
+                $this->delete_gpsdevices($this->id);
+                $this->redirect("?data_source=gpsdevices");
+            }
+        }
+        if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
+            $out['SET_DATASOURCE'] = 1;
+        }
+        if ($this->data_source == 'gpsactions') {
+            if ($this->view_mode == '' || $this->view_mode == 'search_gpsactions') {
+                $this->search_gpsactions($out);
+            }
+            if ($this->view_mode == 'edit_gpsactions') {
+                $this->edit_gpsactions($out, $this->id);
+            }
+            if ($this->view_mode == 'delete_gpsactions') {
+                $this->delete_gpsactions($this->id);
+                $this->redirect("?data_source=gpsactions");
+            }
+        }
+    }
+
+    /**
+     * FrontEnd
+     *
+     * Module frontend
+     *
+     * @access public
+     */
+    function usual(&$out)
+    {
+        $this->getConfig();
+        $out['MAPPROVIDER'] = $this->config['MAPPROVIDER'];
+        $out['MAPTYPE'] = $this->config['MAPTYPE'];
+        $out['MAX_ACCURACY'] = $this->config['MAX_ACCURACY'];
+        $out['API_KEY'] = $this->config['API_KEY'];
+        require(DIR_MODULES . $this->name . '/usual.inc.php');
+    }
+
+    /**
+     * gpslog search
+     *
+     * @access public
+     */
+    function search_gpslog(&$out)
+    {
+        require(DIR_MODULES . $this->name . '/gpslog_search.inc.php');
+    }
+
+    /**
+     * gpslog edit/add
+     *
+     * @access public
+     */
+    function edit_gpslog(&$out, $id)
+    {
+        require(DIR_MODULES . $this->name . '/gpslog_edit.inc.php');
+    }
+
+    /**
+     * gpslog delete record
+     *
+     * @access public
+     */
+    function delete_gpslog($id)
+    {
+        $rec = SQLSelectOne("SELECT * FROM gpslog WHERE ID='$id'");
+        // some action for related tables
+        SQLExec("DELETE FROM gpslog WHERE ID='" . $rec['ID'] . "'");
+    }
+
+    /**
+     * gpslocations search
+     *
+     * @access public
+     */
+    function search_gpslocations(&$out)
+    {
+        require(DIR_MODULES . $this->name . '/gpslocations_search.inc.php');
+    }
+
+    /**
+     * gpslocations edit/add
+     *
+     * @access public
+     */
+    function edit_gpslocations(&$out, $id)
+    {
+        require(DIR_MODULES . $this->name . '/gpslocations_edit.inc.php');
+    }
+
+    /**
+     * gpslocations delete record
+     *
+     * @access public
+     */
+    function delete_gpslocations($id)
+    {
+        $rec = SQLSelectOne("SELECT * FROM gpslocations WHERE ID='$id'");
+        // some action for related tables
+        SQLExec("DELETE FROM gpslocations WHERE ID='" . $rec['ID'] . "'");
+    }
+
+    /**
+     * gpsdevices search
+     *
+     * @access public
+     */
+    function search_gpsdevices(&$out)
+    {
+        require(DIR_MODULES . $this->name . '/gpsdevices_search.inc.php');
+    }
+
+    /**
+     * gpsdevices edit/add
+     *
+     * @access public
+     */
+    function edit_gpsdevices(&$out, $id)
+    {
+        require(DIR_MODULES . $this->name . '/gpsdevices_edit.inc.php');
+    }
+
+    /**
+     * gpsdevices delete record
+     *
+     * @access public
+     */
+    function delete_gpsdevices($id)
+    {
+        $rec = SQLSelectOne("SELECT * FROM gpsdevices WHERE ID='$id'");
+        // some action for related tables
+        SQLExec("DELETE FROM gpslog WHERE DEVICE_ID='" . $rec['ID'] . "'");
+        SQLExec("DELETE FROM gpsdevices WHERE ID='" . $rec['ID'] . "'");
+    }
+
+    /**
+     * gpsactions search
+     *
+     * @access public
+     */
+    function search_gpsactions(&$out)
+    {
+        require(DIR_MODULES . $this->name . '/gpsactions_search.inc.php');
+    }
+
+    /**
+     * gpsactions edit/add
+     *
+     * @access public
+     */
+    function edit_gpsactions(&$out, $id)
+    {
+        require(DIR_MODULES . $this->name . '/gpsactions_edit.inc.php');
+    }
+
+    /**
+     * gpsactions delete record
+     *
+     * @access public
+     */
+    function delete_gpsactions($id)
+    {
+        $rec = SQLSelectOne("SELECT * FROM gpsactions WHERE ID='$id'");
+        // some action for related tables
+        SQLExec("DELETE FROM gpsactions WHERE ID='" . $rec['ID'] . "'");
+    }
+
+    function optimize_log($verbose = 0) {
+        set_time_limit(6000);
+        $records = SQLSelect("SELECT gpslog.ID, gpslog.DEVICEID, gpslog.LOCATION_ID, gpsdevices.ID AS GPS_DEVICE_ID FROM gpslog LEFT JOIN gpsdevices ON gpslog.DEVICE_ID=gpsdevices.ID ORDER BY gpslog.DEVICEID, gpslog.ADDED DESC");
+        $total = count($records);
+        for ($i = 1; $i < $total - 1; $i++) {
+            if (!$records[$i]['GPS_DEVICE_ID']) {
+                SQLExec("DELETE FROM gpslog WHERE ID=" . $records[$i]['ID']);
+                continue;
+            }
+            if (!$records[$i]['LOCATION_ID']) continue;
+            if ($records[$i]['LOCATION_ID'] == $records[$i + 1]['LOCATION_ID'] && $records[$i]['LOCATION_ID'] == $records[$i - 1]['LOCATION_ID']
+                && $records[$i]['GPS_DEVICE_ID'] == $records[$i + 1]['GPS_DEVICE_ID'] && $records[$i]['GPS_DEVICE_ID'] == $records[$i - 1]['GPS_DEVICE_ID']
+            ) {
+                SQLExec("DELETE FROM gpslog WHERE ID=" . $records[$i]['ID']);
+            }
+            if ($verbose && $i % 200 == 0) {
+                echo ".";
+                echo str_repeat(' ', 1024);
+                flush();
+                flush();
+            }
+        }
+        SQLExec("OPTIMIZE TABLE `gpslog`");
+    }
+
+    function processSubscription($event_name, $details = '')
+    {
+        if ($event_name == 'HOURLY') {
+            //...
+            $this->getConfig();
+            if ($this->config['AUTO_OPTIMIZE'] && ((int)date('H')) == 3) {
+                $this->optimize_log();
+            }
+        }
+    }
+
+    /**
+     * Install
+     *
+     * Module installation routine
+     *
+     * @access private
+     */
+    function install($data = '')
+    {
+        parent::install();
+        addClass('GPSLocations');
+        addClassMethod('GPSLocations', 'userEntered', '//$params["USER_OBJECT"]' . "\n");
+        addClassMethod('GPSLocations', 'userLeft', '//$params["USER_OBJECT"]' . "\n");
+        addClassProperty('GPSLocations', 'locationTitle');
+        addClassProperty('GPSLocations', 'latestVisit');
+
+        addClassMethod('Users', 'enteredLocation', '//$params["LOCATION_OBJECT"], $params["LOCATION"]' . "\n");
+        addClassMethod('Users', 'leftLocation', '//$params["LOCATION_OBJECT"], $params["LOCATION"]' . "\n");
+    }
+
+    /**
+     * Uninstall
+     *
+     * Module uninstall routine
+     *
+     * @access public
+     */
+    function uninstall()
+    {
+        SQLExec('DROP TABLE IF EXISTS gpslog');
+        SQLExec('DROP TABLE IF EXISTS gpslocations');
+        SQLExec('DROP TABLE IF EXISTS gpsdevices');
+        SQLExec('DROP TABLE IF EXISTS gpsactions');
+        parent::uninstall();
+    }
+
+
+    /**
+     * dbInstall
+     *
+     * Database installation routine
+     *
+     * @access private
+     */
+    function dbInstall($data)
+    {
+        /*
+        gpslog - Log
+        gpslocations - Locations
+        gpsdevices - Devices
+        gpsactions - Actions
+        */
+        $data = <<<EOD
  gpslog: ID int(10) unsigned NOT NULL auto_increment
  gpslog: ADDED datetime
  gpslog: LAT float DEFAULT '0' NOT NULL
@@ -447,23 +531,24 @@ gpsactions - Actions
  gpsactions: INDEX (LOCATION_ID)
  gpsactions: INDEX (USER_ID)
 EOD;
-  parent::dbInstall($data);
+        parent::dbInstall($data);
 
-  /*
-  $indexes=array('gpslog'=>array('DEVICE_ID','LOCATION_ID'));
-  foreach($indexes as $indexTable=>$v) {
-   foreach($v as $indexColumn) {
-    $indexCheck=SQLSelectOne("SELECT COUNT(1) IndexIsThere FROM INFORMATION_SCHEMA.STATISTICS WHERE table_schema=DATABASE() AND table_name='$indexTable' AND index_name='$indexColumn';");
-    if (!$indexCheck['IndexIsThere']) {
-     SQLExec("CREATE INDEX $indexColumn ON $indexTable($indexColumn);");
+        /*
+        $indexes=array('gpslog'=>array('DEVICE_ID','LOCATION_ID'));
+        foreach($indexes as $indexTable=>$v) {
+         foreach($v as $indexColumn) {
+          $indexCheck=SQLSelectOne("SELECT COUNT(1) IndexIsThere FROM INFORMATION_SCHEMA.STATISTICS WHERE table_schema=DATABASE() AND table_name='$indexTable' AND index_name='$indexColumn';");
+          if (!$indexCheck['IndexIsThere']) {
+           SQLExec("CREATE INDEX $indexColumn ON $indexTable($indexColumn);");
+          }
+         }
+        }
+        */
+
     }
-   }
-  }
-  */
-
- }
 // --------------------------------------------------------------------
 }
+
 /*
 *
 * TW9kdWxlIGNyZWF0ZWQgSnVsIDI1LCAyMDExIHVzaW5nIFNlcmdlIEouIHdpemFyZCAoQWN0aXZlVW5pdCBJbmMgd3d3LmFjdGl2ZXVuaXQuY29tKQ==
