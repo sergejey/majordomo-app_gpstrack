@@ -161,6 +161,7 @@ class app_gpstrack extends module
         $out['MAPTYPE'] = $this->config['MAPTYPE'];
         $out['MAX_ACCURACY'] = $this->config['MAX_ACCURACY'];
         $out['AUTO_OPTIMIZE'] = (int)$this->config['AUTO_OPTIMIZE'];
+        $out['KEEP_HISTORY'] = (int)$this->config['KEEP_HISTORY'];
         $out['API_KEY'] = $this->config['API_KEY'];
         if ($this->view_mode == 'update_settings') {
             global $mapprovider;
@@ -172,6 +173,7 @@ class app_gpstrack extends module
             global $api_key;
             $this->config['API_KEY'] = $api_key;
             $this->config['AUTO_OPTIMIZE'] = gr('auto_optimize', 'int');
+            $this->config['KEEP_HISTORY'] = gr('keep_history', 'int');
             $this->saveConfig();
             if ($this->config['AUTO_OPTIMIZE']) {
                 subscribeToEvent($this->name, 'HOURLY');
@@ -397,7 +399,12 @@ class app_gpstrack extends module
 
     function optimize_log($verbose = 0) {
         set_time_limit(6000);
+
+        $tmp=SQLSelectOne("SELECT COUNT(*) as TOTAL FROM gpslog");
+        $before=(int)$tmp['TOTAL'];
+
         $records = SQLSelect("SELECT gpslog.ID, gpslog.DEVICEID, gpslog.LOCATION_ID, gpsdevices.ID AS GPS_DEVICE_ID FROM gpslog LEFT JOIN gpsdevices ON gpslog.DEVICE_ID=gpsdevices.ID ORDER BY gpslog.DEVICEID, gpslog.ADDED DESC");
+        DebMes("Staring GPS data optimizing (total: $before)",'gps');
         $total = count($records);
         for ($i = 1; $i < $total - 1; $i++) {
             if (!$records[$i]['GPS_DEVICE_ID']) {
@@ -418,6 +425,11 @@ class app_gpstrack extends module
             }
         }
         SQLExec("OPTIMIZE TABLE `gpslog`");
+
+        $tmp=SQLSelectOne("SELECT COUNT(*) as TOTAL FROM gpslog");
+        $after=(int)$tmp['TOTAL'];
+
+        DebMes("Finished GPS data optimizing (total: $after)",'gps');
     }
 
     function processSubscription($event_name, $details = '')
@@ -425,6 +437,9 @@ class app_gpstrack extends module
         if ($event_name == 'HOURLY') {
             //...
             $this->getConfig();
+            if ($this->config['KEEP_HISTORY']) {
+                SQLExec("DELETE FROM gpslog WHERE ADDED<'".date('Y-m-d H:i:s',(time()-$this->config['KEEP_HISTORY']*24*60*60))."'");
+            }
             if ($this->config['AUTO_OPTIMIZE'] && ((int)date('H')) == 3) {
                 $this->optimize_log();
             }

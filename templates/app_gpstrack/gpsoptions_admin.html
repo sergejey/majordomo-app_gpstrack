@@ -1,58 +1,75 @@
 
- [#if VIEW_MODE="gpsoptions" || VIEW_MODE=""#]
+[#if VIEW_MODE="gpsoptions" || VIEW_MODE=""#]
 
 [#if OK#]
-   <div class="alert alert-success"><#LANG_DATA_SAVED#></div>
+<div class="alert alert-success"><#LANG_DATA_SAVED#></div>
 [#endif OK#]
 
 <div id='settings'>
-<form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
-<fieldset>
+    <form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
+        <fieldset>
 
-<div class="form-group">
- <label class="control-label"> <#LANG_GPSTRACK_MAPPROVIDER#> </label>
- <div class="col-lg-6">
-<select class="form-control" name="mapprovider">
-    <option value="google" [#if MAPPROVIDER=="google"#] selected[#endif#]>Google</option>
-    <option value="yandex" [#if MAPPROVIDER=="yandex"#] selected[#endif#]>Yandex</option>
-    <option value="osm" [#if MAPPROVIDER=="osm"#] selected[#endif#]>OpenStreetMap</option>
-    <option value="2gis" [#if MAPPROVIDER=="2gis"#] selected[#endif#]>2GIS</option>
-   </select>
-</div>
-</div>
+            <div class="form-group">
+                <label class="control-label"> <#LANG_GPSTRACK_MAPPROVIDER#> </label>
+                <div class="col-lg-6">
+                    <select class="form-control" name="mapprovider">
+                        <option value="google" [#if MAPPROVIDER=="google"#] selected[#endif#]>Google</option>
+                        <option value="yandex" [#if MAPPROVIDER=="yandex"#] selected[#endif#]>Yandex</option>
+                        <option value="osm" [#if MAPPROVIDER=="osm"#] selected[#endif#]>OpenStreetMap</option>
+                        <option value="2gis" [#if MAPPROVIDER=="2gis"#] selected[#endif#]>2GIS</option>
+                    </select>
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label class="control-label"> <#LANG_GPSTRACK_APIKEY#> </label>
-        <div class="col-lg-6">
-         <input type="text" name="api_key" value="<#API_KEY#>" class="form-control">
-        </div>
-    </div>
+            <div class="form-group">
+                <label class="control-label"> <#LANG_GPSTRACK_APIKEY#> </label>
+                <div class="col-lg-6">
+                    <input type="text" name="api_key" value="<#API_KEY#>" class="form-control">
+                </div>
+            </div>
 
-<div class="form-group">
-    <label class="control-label"> <#LANG_GPSTRACK_MAPTYPE#> </label>
-    <div class="col-lg-6">
-        <select class="form-control" name="maptype">
-            <option value="map" [#if MAPTYPE=="map"#] selected[#endif#]><#LANG_GPSTRACK_MAPTYPE_MAP#></option>
-            <option value="satellite" [#if MAPTYPE=="satellite"#] selected[#endif#]><#LANG_GPSTRACK_MAPTYPE_SATELLITE#></option>
-            <option value="hybrid" [#if MAPTYPE=="hybrid"#] selected[#endif#]><#LANG_GPSTRACK_MAPTYPE_HYBRID#></option>
-        </select>
-    </div>
-</div>
+            <div class="form-group">
+                <label class="control-label"> <#LANG_GPSTRACK_MAPTYPE#> </label>
+                <div class="col-lg-6">
+                    <select class="form-control" name="maptype">
+                        <option value="map" [#if MAPTYPE=="map"#] selected[#endif#]><#LANG_GPSTRACK_MAPTYPE_MAP#></option>
+                        <option value="satellite" [#if MAPTYPE=="satellite"#] selected[#endif#]><#LANG_GPSTRACK_MAPTYPE_SATELLITE#></option>
+                        <option value="hybrid" [#if MAPTYPE=="hybrid"#] selected[#endif#]><#LANG_GPSTRACK_MAPTYPE_HYBRID#></option>
+                    </select>
+                </div>
+            </div>
 
-<div class="form-group">
-    <label class="control-label"> <#LANG_GPSTRACK_MAX_ACCURACY#> </label>
-    <div class="col-lg-6">
-        <input type="number" class="form-control" name="max_accuracy" value="[#if MAX_ACCURACY==""#]0[#else#][#MAX_ACCURACY#][#endif#]" class="input">
-                <p class="help-block"><#LANG_GPSTRACK_MAX_ACCURACY_DESC#></p>
-    </div>
-</div>
+            <div class="form-group">
+                <label class="control-label"> <#LANG_GPSTRACK_MAX_ACCURACY#> </label>
+                <div class="col-lg-6">
+                    <input type="number" class="form-control" name="max_accuracy" value="[#if MAX_ACCURACY==""#]0[#else#][#MAX_ACCURACY#][#endif#]" class="input">
+                    <p class="help-block"><#LANG_GPSTRACK_MAX_ACCURACY_DESC#></p>
+                </div>
+            </div>
 
-<div class="form-actions">
-<input type="submit" name="subm" value="<#LANG_UPDATE#>" class="btn btn-default btn-primary">
-<input type="hidden" name="view_mode" value="update_settings">
-<input type="hidden" name="mode" value="update">
-</div>
-</fieldset>
-</form>
+            <div class="form-group">
+                <label class="control-label"> <#LANG_KEEP_HISTORY_DAYS#>: </label>
+                <div class="col-lg-6">
+                    <input type="text" name="keep_history" class="form-control" value="[#KEEP_HISTORY#]">
+                    <div class="help-block">0 = no limit</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label"> Daily log optimization: </label>
+                <div class="col-lg-6">
+                    <input type="radio" name="auto_optimize" value="1"[#if AUTO_OPTIMIZE="1"#] checked[#endif#]> <#LANG_YES#>
+                    <input type="radio" name="auto_optimize" value="0"[#if AUTO_OPTIMIZE!="1"#] checked[#endif#]> <#LANG_NO#>
+                    <div class="help-block">Runs at 3 a.m. when turned on</div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <input type="submit" name="subm" value="<#LANG_UPDATE#>" class="btn btn-default btn-primary">
+                <input type="hidden" name="view_mode" value="update_settings">
+                <input type="hidden" name="mode" value="update">
+            </div>
+        </fieldset>
+    </form>
 </div>
 [#endif VIEW_MODE#]
