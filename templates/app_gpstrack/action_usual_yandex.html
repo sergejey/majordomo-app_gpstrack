@@ -1,4 +1,8 @@
+[#if API_KEY!=""#]
+<script src="https://api-maps.yandex.ru/2.1/?apikey=[#API_KEY#]&lang=ru_RU" type="text/javascript"></script>
+[#else#]
 <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+[#endif#]
 
 <script type="text/javascript" language="javascript">
 
