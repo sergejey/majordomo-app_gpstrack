@@ -98,7 +98,7 @@ if ($_REQUEST['op'] != '') {
     exit;
 }
 
-if (isset($_REQUEST['latitude'])) {
+if ($_REQUEST['latitude']!='' && $_REQUEST['longitude']!='' && $_REQUEST['latitude']!='0' && $_REQUEST['longitude']!='0') {
     //DebMes("GPS DATA RECEIVED: \n".serialize($_REQUEST));
     if ($_REQUEST['deviceid']) {
         $sqlQuery = "SELECT *
@@ -153,7 +153,7 @@ if (isset($_REQUEST['latitude'])) {
     $rec['ACCURACY'] = isset($_REQUEST['accuracy']) ? $_REQUEST['accuracy'] : 0;
 
     if (($max_accuracy != 0) && ($rec['ACCURACY'] > $max_accuracy)) {
-        //DebMes("GPS Accuracy {$rec['ACCURACY']} > {$max_accuracy} exiting!");
+        DebMes("GPS Accuracy {$rec['ACCURACY']} > {$max_accuracy} exiting!",'gps');
         $db->Disconnect();
         exit;
     }
@@ -236,19 +236,20 @@ if (isset($_REQUEST['latitude'])) {
         $params['USER_OBJECT'] = $user['LINKED_OBJECT'];
 
         if ($distance <= $locations[$i]['RANGE']) {
-            //Debmes("Device (" . $device['TITLE'] . ") NEAR location " . $locations[$i]['TITLE']);
+
+            // we are at location
+            $rec['LOCATION_ID'] = $locations[$i]['ID'];
+            SQLUpdate('gpslog', $rec);
+
+            //Debmes("Device (" . $device['TITLE'] . ") NEAR location " . $locations[$i]['TITLE']." (".json_encode($rec).")",'gps');
             $location_found = 1;
 
             if ($user['LINKED_OBJECT'])
                 setGlobal($user['LINKED_OBJECT'] . '.seenAt', $locations[$i]['TITLE']);
 
-            // we are at location
-            $rec['LOCATION_ID'] = $locations[$i]['ID'];
-
-            SQLUpdate('gpslog', $rec);
 
             if ($previous_log_record['LOCATION_ID'] != $locations[$i]['ID']) {
-                //Debmes("Device (" . $device['TITLE'] . ") ENTERED location " . $locations[$i]['TITLE']);
+                Debmes("Device (" . $device['TITLE'] . ") ENTERED location " . $locations[$i]['TITLE'].' (prev record: '.json_encode($previous_log_record).')','gps');
 
                 if ($locations[$i]['LINKED_OBJECT']) {
                     setGlobal($locations[$i]['LINKED_OBJECT'] . '.latestVisit', date('Y-m-d H:i:s'));
@@ -296,7 +297,7 @@ if (isset($_REQUEST['latitude'])) {
         } else {
 
             if ($previous_log_record['LOCATION_ID'] == $locations[$i]['ID']) {
-                //Debmes("Device (" . $device['TITLE'] . ") LEFT location " . $locations[$i]['TITLE']);
+                Debmes("Device (" . $device['TITLE'] . ") LEFT location " . $locations[$i]['TITLE'].' (prev record: '.json_encode($previous_log_record).')','gps');
 
                 if ($locations[$i]['LINKED_OBJECT']) {
                     callMethodSafe($locations[$i]['LINKED_OBJECT'] . '.userLeft', $params);
