@@ -82,7 +82,6 @@ for ($i = 0; $i < $total; $i++) {
     }
 
 }
-    DebMes($res_devices);
 $out['DEVICES']=$res_devices;
 
 if ($ajax) {
