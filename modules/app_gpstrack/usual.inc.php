@@ -66,6 +66,10 @@ if ($ajax && $device_id) {
 $res_devices=array();
 $total = count($out['DEVICES']);
 for ($i = 0; $i < $total; $i++) {
+        // some action for every record if required
+    if (!checkAccess('gps_device', $out['DEVICES'][$i]['ID'])) {
+		continue;// some action for every record if required
+	}
     if (!$out['DEVICES'][$i]['COLOR'])
         $out['DEVICES'][$i]['COLOR'] = $colors[$i];
     $update_tm=strtotime($out['DEVICES'][$i]['UPDATED']);
@@ -78,7 +82,7 @@ for ($i = 0; $i < $total; $i++) {
     }
 
 }
-
+    DebMes($res_devices);
 $out['DEVICES']=$res_devices;
 
 if ($ajax) {

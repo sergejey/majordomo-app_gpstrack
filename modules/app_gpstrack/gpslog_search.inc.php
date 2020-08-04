@@ -103,13 +103,19 @@ $urlPattern='?page=(:num)&device_id='.(int)$device_id."&user_id=".(int)$user_id.
 $paginator = new JasonGrimes\Paginator($res_total['TOTAL'], $on_page, $page, $urlPattern);
 $out['PAGINATOR']=$paginator;
 
-$res = SQLSelect("SELECT gpslog.*, gpsdevices.TITLE as DEVICE_TITLE, gpslocations.TITLE as LOCATION_TITLE FROM gpslog LEFT JOIN gpsdevices ON gpsdevices.ID=gpslog.DEVICE_ID LEFT JOIN gpslocations ON gpslocations.ID=gpslog.LOCATION_ID WHERE $qry ORDER BY " . $sortby_gpslog." LIMIT $limit");
+$res = SQLSelect("SELECT gpslog.*, gpsdevices.ID as DEVICE_ID, gpsdevices.TITLE as DEVICE_TITLE, gpslocations.TITLE as LOCATION_TITLE FROM gpslog LEFT JOIN gpsdevices ON gpsdevices.ID=gpslog.DEVICE_ID LEFT JOIN gpslocations ON gpslocations.ID=gpslog.LOCATION_ID WHERE $qry ORDER BY " . $sortby_gpslog." LIMIT $limit");
 if ($res[0]['ID']) {
     //paging($res, 50, $out); // search result paging
     colorizeArray($res);
     $total = count($res);
     for ($i = 0; $i < $total; $i++) {
         // some action for every record if required
+                // some action for every record if required
+    if (!checkAccess('gps_device', $res[$i]['DEVICE_ID'])) {
+        unset ($res[$i]);
+		continue;// some action for every record if required
+	}
+	DebMes($res[$i]);
         $tmp = explode(' ', $res[$i]['ADDED']);
         $res[$i]['ADDED'] = fromDBDate($tmp[0]) . " " . $tmp[1];
     }
