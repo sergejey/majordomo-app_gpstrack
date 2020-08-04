@@ -110,12 +110,10 @@ if ($res[0]['ID']) {
     $total = count($res);
     for ($i = 0; $i < $total; $i++) {
         // some action for every record if required
-                // some action for every record if required
-    if (!checkAccess('gps_device', $res[$i]['DEVICE_ID'])) {
-        unset ($res[$i]);
-		continue;// some action for every record if required
+        if (!checkAccess('gps_device', $res[$i]['DEVICE_ID'])) {
+            unset ($res[$i]);
+	    continue;// some action for every record if required
 	}
-	DebMes($res[$i]);
         $tmp = explode(' ', $res[$i]['ADDED']);
         $res[$i]['ADDED'] = fromDBDate($tmp[0]) . " " . $tmp[1];
     }
