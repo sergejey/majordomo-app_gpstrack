@@ -56,8 +56,7 @@
    colorizeArray($res);
    $total=count($res);
    for($i=0;$i<$total;$i++) {
-    // some action for every record if required
-    $tmp=explode(' ', $res[$i]['EXECUTED']);
+	$tmp=explode(' ', $res[$i]['EXECUTED']);
     $res[$i]['EXECUTED']=fromDBDate($tmp[0])." ".$tmp[1];
    }
    $out['RESULT']=$res;

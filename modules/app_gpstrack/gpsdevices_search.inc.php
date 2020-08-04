@@ -51,6 +51,10 @@
    $total=count($res);
    for($i=0;$i<$total;$i++) {
     // some action for every record if required
+    if (!checkAccess('gps_device', $res[$i]['ID'])) {
+        unset ($res[$i]);
+		continue;// some action for every record if required
+	}
     $tmp=explode(' ', $res[$i]['UPDATED']);
     $res[$i]['UPDATED']=fromDBDate($tmp[0])." ".$tmp[1];
    }
