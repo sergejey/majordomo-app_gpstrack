@@ -121,7 +121,7 @@ function updateMarkers() {
 				var myLatLng = {lat: parseFloat(marker.LAT), lng: parseFloat(marker.LON)};
 				var mapMarker = new google.maps.Marker({
 					temp_id: temp_id,
-					icon: 'http://labs.google.com/ridefinder/images/mm_20_'+marker.COLOR+'.png',
+					icon: '<#ROOTHTML#>modules/app_gpstrack/marker.php?color='+encodeURIComponent(marker.COLOR),
 					position: myLatLng,
 					map: map,
 					title: marker.NAME,

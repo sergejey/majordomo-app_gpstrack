@@ -97,7 +97,7 @@
                     }
                         var mapMarker = new mxn.Marker( new mxn.LatLonPoint(marker.LAT, marker.LON));
                         mapMarker.temp_id = temp_id;
-                        mapMarker.setIcon('http://labs.google.com/ridefinder/images/mm_20_'+marker.COLOR+'.png');
+                        mapMarker.setIcon('<#ROOTHTML#>modules/app_gpstrack/marker.php?color='+encodeURIComponent(marker.COLOR));
                         mapMarker.setLabel(marker.NAME);
                         mapMarker.setInfoBubble(marker.HTML);
                         map<#UNIQ#>.addMarker(mapMarker);

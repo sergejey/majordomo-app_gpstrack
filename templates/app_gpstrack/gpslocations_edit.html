@@ -17,84 +17,192 @@
 </li>
 </ul>
 
-<form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
-[#if OK#]
-<div class="alert alert-success"><#LANG_DATA_SAVED#></div>
-[#endif OK#]
-[#if ERR#]
-<div class="alert alert-danger"><#LANG_FILLOUT_REQURED#></div>
-[#endif ERR#]
+<div class="row">
+    <div class="col-md-6">
+        <form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
+            [#if OK#]
+            <div class="alert alert-success"><#LANG_DATA_SAVED#></div>
+            [#endif OK#]
+            [#if ERR#]
+            <div class="alert alert-danger"><#LANG_FILLOUT_REQURED#></div>
+            [#endif ERR#]
 
 
-<div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_TITLE#>:<font color="red">*</font></label>
-        <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_TITLE#]alert-danger[#endif#]"  name="title" value="[#TITLE#]" required="true"></div>
-</div>
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputTitle"><#LANG_TITLE#>:<font color="red">*</font></label>
+                <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_TITLE#]alert-danger[#endif#]"  name="title" value="[#TITLE#]" required="true"></div>
+            </div>
 
-<div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_LATITUDE#>:<font color="red">*</font></label>
-        <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_LAT#]alert-danger[#endif#]"  name="lat" value="[#LAT#]" required="true"></div>
-</div>
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputTitle"><#LANG_LATITUDE#>:<font color="red">*</font></label>
+                <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_LAT#]alert-danger[#endif#]"  name="lat" id="lat" value="[#LAT#]" required="true"></div>
+            </div>
 
-<div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_LONGITUDE#>:<font color="red">*</font></label>
-        <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_LON#]alert-danger[#endif#]"  name="lon" value="[#LON#]" required="true"></div>
-</div>
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputTitle"><#LANG_LONGITUDE#>:<font color="red">*</font></label>
+                <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_LON#]alert-danger[#endif#]"  name="lon" id="lon" value="[#LON#]" required="true"></div>
+            </div>
 
-<div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_RANGE#>:<font color="red">*</font></label>
-        <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_RANGE#]alert-danger[#endif#]"  name="range" value="[#RANGE#]" required="true"></div>
-</div>
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputTitle"><#LANG_RANGE#>:<font color="red">*</font></label>
+                <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_RANGE#]alert-danger[#endif#]" id="range"  name="range" value="[#RANGE#]" required="true"></div>
+            </div>
 
-<div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_VIRTUAL_USER#>:<font color="red">*</font></label>
-        <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_VIRTUAL_USER_ID#]alert-danger[#endif#]"  name="virtual_user_id" value="[#VIRTUAL_USER_ID#]" required="true"></div>
-</div>
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputTitle"><#LANG_VIRTUAL_USER#>:<font color="red">*</font></label>
+                <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_VIRTUAL_USER_ID#]alert-danger[#endif#]"  name="virtual_user_id" value="[#VIRTUAL_USER_ID#]"></div>
+            </div>
 
-<div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_HOME_LOCATION#>:<font color="red">*</font></label>
-        <div class="col-lg-5">
-        <input type="radio" name="is_home" value="1"[#if IS_HOME="1"#] checked[#endif#]> <#LANG_YES#>
-        <input type="radio" name="is_home" value="0"[#if IS_HOME!="1"#] checked[#endif#]> <#LANG_NO#>
- </div>
-
-</div>
-
-    <div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputobject"><#LANG_LINKED_OBJECT#>:</label>
-        <div class="col-lg-5"><input type="text"  class="form-control"  name="linked_object" value="[#LINKED_OBJECT#]" id="linked_object">
-        </div>
-    </div>
-    [#module name="linkedobject" object_field="linked_object"#]
-
-
-
-<div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle">&nbsp;</label>
-        <div class="col-lg-5">
-                 [#if ID!=""#]
-                 <input type="submit" name="subm" value="<#LANG_SUBMIT#>" class="btn btn-default btn-primary">
-                 [#else ID#]
-                 <input type="submit" name="subm" value="<#LANG_ADD#>" class="btn btn-default btn-primary">
-                 [#endif ID#]
-                 &nbsp;
-                 <a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default "><#LANG_CANCEL#></a>
-                
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputTitle"><#LANG_HOME_LOCATION#>:<font color="red">*</font></label>
+                <div class="col-lg-5">
+                    <input type="radio" name="is_home" value="1"[#if IS_HOME="1"#] checked[#endif#]> <#LANG_YES#>
+                    <input type="radio" name="is_home" value="0"[#if IS_HOME!="1"#] checked[#endif#]> <#LANG_NO#>
                 </div>
+
+            </div>
+
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputobject"><#LANG_LINKED_OBJECT#>:</label>
+                <div class="col-lg-5"><input type="text"  class="form-control"  name="linked_object" value="[#LINKED_OBJECT#]" id="linked_object">
+                </div>
+            </div>
+            [#module name="linkedobject" object_field="linked_object"#]
+
+
+
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputTitle">&nbsp;</label>
+                <div class="col-lg-5">
+                    [#if ID!=""#]
+                    <input type="submit" name="subm" value="<#LANG_SUBMIT#>" class="btn btn-default btn-primary">
+                    [#else ID#]
+                    <input type="submit" name="subm" value="<#LANG_ADD#>" class="btn btn-default btn-primary">
+                    [#endif ID#]
+                    &nbsp;
+                    <a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default "><#LANG_CANCEL#></a>
+
+                </div>
+            </div>
+
+
+
+            <input type="hidden" name="id" value="<#ID#>">
+            <input type="hidden" name="view_mode" value="<#VIEW_MODE#>">
+            <input type="hidden" name="edit_mode" value="<#EDIT_MODE#>">
+            <input type="hidden" name="mode" value="update">
+            <input type="hidden" name="data_source" value="<#DATA_SOURCE#>">
+        </form>
+    </div>
+    <div class="col-md-6">
+        [#if API_KEY!=""#]
+        <form method="get" class="form-inline">
+            <div class="form-group">
+             <input type="text" value="" placeholder="Address..." name="address" class="form-control" id="address">
+            </div>
+            <div class="form-group">
+                    <a href="#" class="btn btn-default btn-sm" onclick="return searchCoordinates();"><#LANG_SEARCH#></a>
+            </div>
+        </form>
+        <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=[#API_KEY#]&libraries=places"></script>
+        <script src="<#ROOTHTML#>3rdparty/locationpicker/locationpicker.jquery.js"></script>
+        <div id="mapArea" style="width: 100%; height: 400px;"></div>
+
+        <script type="text/javascript">
+
+            function searchCoordinates() {
+                var geocoder = new google.maps.Geocoder();
+                var mapContext = $('#mapArea').locationpicker('map');
+                var address=$('#address').val();
+                geocoder.geocode( {'address' : address}, function(results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        mapContext.map.setCenter(results[0].geometry.location);
+                        console.log(results[0].geometry.location);
+                        $('#lat').val(results[0].geometry.location.lat());
+                        $('#lon').val(results[0].geometry.location.lng());
+                        $('#mapArea').locationpicker(
+                                {
+                                    location: {
+                                        latitude: results[0].geometry.location.lat(),
+                                        longitude: results[0].geometry.location.lng()
+                                    },
+                                    radius: $('#range').val(),
+                                    inputBinding: {
+                                        latitudeInput: $('#lat'),
+                                        longitudeInput: $('#lon'),
+
+                                    },
+                                    enableAutocomplete: true,
+                                    autocompleteOptions: {
+                                        types: ['(cities)'],
+                                        componentRestrictions: {}
+                                    },
+
+                                });
+                    }
+                });
+                return false;
+            }
+
+            function myPosition() {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(function(position) {
+                        var pos = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        //alert(pos.lat);
+                        var mapContext = $(this).locationpicker('mapArea');
+                        mapContext.map.setCenter(pos);
+                    }, function() {
+
+                    });
+                }
+                return false;
+            }
+
+
+
+            $(document).ready(function() {
+
+                //
+
+                $('#mapArea').locationpicker(
+                        {
+                            [#if LAT!="" && LON!=""#]
+                location: {
+                    latitude: [#LAT#],
+                    longitude: [#LON#]
+                },[#endif#]
+
+                radius: $('#range').val(),
+                        inputBinding: {
+                    latitudeInput: $('#lat'),
+                            longitudeInput: $('#lon'),
+
+                },
+                enableAutocomplete: true,
+                        autocompleteOptions: {
+                    types: ['(cities)'],
+                            componentRestrictions: {}
+                },
+            }
+                );
+
+
+
+            });
+        </script>
+
+        [#endif API_KEY#]
+    </div>
 </div>
 
 
-
-<input type="hidden" name="id" value="<#ID#>">
-<input type="hidden" name="view_mode" value="<#VIEW_MODE#>">
-<input type="hidden" name="edit_mode" value="<#EDIT_MODE#>">
-<input type="hidden" name="mode" value="update">
-<input type="hidden" name="data_source" value="<#DATA_SOURCE#>">
-</form>
-
-
+<!--#
 [#if ID!=""#]
 [#if API_KEY!=""#]
 <img src="http://maps.googleapis.com/maps/api/staticmap?center=[#LAT#],[#LON#]&size=512x512&maptype=hybrid&sensor=false&zoom=14&markers=[#LAT#],[#LON#]&key=[#API_KEY#]" border="0">
 [#endif API_KEY#]
 [#endif ID#]
+#-->
