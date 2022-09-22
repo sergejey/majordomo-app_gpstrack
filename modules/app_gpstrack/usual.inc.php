@@ -136,6 +136,12 @@ if ($ajax) {
         $res['LOCATIONS'] = SQLSelect("SELECT * FROM gpslocations");
         echo json_encode($res);
     }
+    
+    if ($op == 'del_log') {
+        global $id_log;
+        SQLExec("DELETE FROM gpslog WHERE ID=".$id_log);
+        echo "Ok";
+    }
 
     exit;
 }
