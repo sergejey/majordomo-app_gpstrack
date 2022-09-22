@@ -52,15 +52,45 @@
         }).done(function (data) {
             //console.log(data);
             var obj = jQuery.parseJSON(data);
-            if ((typeof obj.PATH!=='undefined') && (obj.PATH.length>0)) {
-                var points = obj.PATH;
+            if (obj.PATH.length > 0) {
+
+                var points = obj.POINTS;
+
                 var geometry = new Array();
-                var pointCnt = points.length;
-                for (var i = 0; i < pointCnt; i++) {
-                    geometry.push(points[i])
-                }
+                points.forEach(function (item, i, points) {
+                    geometry.push(new Array(parseFloat(item.LAT), parseFloat(item.LON)))
+                });
                 var polyline = DG.polyline(geometry, { color: clr }).addTo(map);
                 map.polylines.push(polyline);
+                
+                points.forEach(function (item, i, arr) {
+                        var mapMarker = DG.marker([parseFloat(item.LAT), parseFloat(item.LON)], {
+                        icon: DG.icon(
+                        { iconUrl: '../templates/app_gpstrack/img/gps.png',
+                          iconSize: [15, 15],
+                          iconAnchor: [8, 8]
+                        }),
+                        
+                        title: item.TITLE,
+                        alt: item.TITLE,
+                        id_log: item.ID
+                        }).addTo(map).bindPopup(item.TITLE);
+                        
+                        mapMarker.on('click', function(e) {
+                            console.log(e);
+                            // confirm
+                            var url_del='<#ROOTHTML#>ajax/app_gpstrack.html?op=del_log&id_log='+e.target.options.id_log; 
+                            //console.log(url_del);
+                            $.ajax({
+                                url: url_del
+                            }).done(function (data_res) {
+                               console.log(data_res);
+                            });
+                            e.target.remove();   
+                            
+                        });
+                        map.markers.push(mapMarker);
+                    });
                 
                 // увеличиваем масштаб так, чтобы было видно всю ломаную
                 map.fitBounds(polyline.getBounds());
