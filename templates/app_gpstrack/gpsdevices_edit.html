@@ -17,84 +17,105 @@
 </li>
 </ul>
 
-<form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
-[#if OK#]
-<div class="alert alert-success"><#LANG_DATA_SAVED#></div>
-[#endif OK#]
-[#if ERR#]
-<div class="alert alert-danger"><#LANG_FILLOUT_REQURED#></div>
-[#endif ERR#]
+<div class="row">
+    <div class="col-md-5">
+        <form action="?" method="post" enctype="multipart/form-data" name="frmEdit" class="form-horizontal">
+            [#if OK#]
+            <div class="alert alert-success"><#LANG_DATA_SAVED#></div>
+            [#endif OK#]
+            [#if ERR#]
+            <div class="alert alert-danger"><#LANG_FILLOUT_REQURED#></div>
+            [#endif ERR#]
 
 
-<div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_TITLE#>:<font color="red">*</font></label>
-        <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_TITLE#]alert-danger[#endif#]"  name="title" value="[#TITLE#]" required="true"></div>
-</div>
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputTitle"><#LANG_TITLE#>:<font color="red">*</font></label>
+                <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_TITLE#]alert-danger[#endif#]"  name="title" value="[#TITLE#]" required="true"></div>
+            </div>
 
 
 
-<!-- USER_ID (select) -->
-[#if !IS_SET_USER_ID#]
+            <!-- USER_ID (select) -->
+            [#if !IS_SET_USER_ID#]
 
 
-<div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_USER#>:<font color="red">*</font></label>
-        <div class="col-lg-5">
-		<select name="user_id" class="form-control [#if ERR_USER_ID#]alert-danger[#endif#]" >
-  <option value="">select
-  [#begin USER_ID_OPTIONS#]<option value="[#ID#]"[#if SELECTED#] selected[#endif#]>[#NAME#]
-  [#end USER_ID_OPTIONS#]
- </select>
-		
-		</div>
-</div>
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputTitle"><#LANG_USER#>:<font color="red">*</font></label>
+                <div class="col-lg-5">
+                    <select name="user_id" class="form-control [#if ERR_USER_ID#]alert-danger[#endif#]" >
+                        <option value="">select
+                            [#begin USER_ID_OPTIONS#]<option value="[#ID#]"[#if SELECTED#] selected[#endif#]>[#NAME#]
+                        [#end USER_ID_OPTIONS#]
+                    </select>
 
-[#endif IS_SET_USER_ID#]
-<!-- DEVICEID (varchar) -->
+                </div>
+            </div>
 
-<div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_DEVICE#>:<font color="red">*</font></label>
-        <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_DEVICEID#]alert-danger[#endif#]"  name="deviceid" value="[#DEVICEID#]" required="true"></div>
-</div>
+            [#endif IS_SET_USER_ID#]
+            <!-- DEVICEID (varchar) -->
+
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputTitle"><#LANG_DEVICE#>:<font color="red">*</font></label>
+                <div class="col-lg-5"><input type="text"  class="form-control [#if ERR_DEVICEID#]alert-danger[#endif#]"  name="deviceid" value="[#DEVICEID#]" required="true"></div>
+            </div>
 
 
-<div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle">&nbsp;</label>
-        <div class="col-lg-5">
-		 [#if ID!=""#]
- <input type="submit" name="subm" value="<#LANG_SUBMIT#>" class="btn btn-default btn-primary">
- [#else ID#]
- <input type="submit" name="subm" value="<#LANG_ADD#>" class="btn btn-default btn-primary">
- [#endif ID#]
- &nbsp;
- <a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default "><#LANG_CANCEL#></a>
-		
-		</div>
-</div>
- 
-<!-- разграничение прав доступа к терминалам -->		
-[#if ID!=""#]
-    <div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_ACCESS_CONTROL#>:<#LANG_HCB#>access_control<#LANG_HCE#></label>
-        <div class="col-lg-5">
-            <a class="btn btn-default " href="?(panel:{action=security_rules})&object_type=gps_device&object_id=[#ID#]&print=1" onClick="return openModalTWindow('security', '<#LANG_ACCESS_CONTROL#>', this.href, 800, 600);" target=_blank><#LANG_SET#></a>
-        </div>
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputTitle">&nbsp;</label>
+                <div class="col-lg-5">
+                    [#if ID!=""#]
+                    <input type="submit" name="subm" value="<#LANG_SUBMIT#>" class="btn btn-default btn-primary">
+                    [#else ID#]
+                    <input type="submit" name="subm" value="<#LANG_ADD#>" class="btn btn-default btn-primary">
+                    [#endif ID#]
+                    &nbsp;
+                    <a href="?data_source=<#DATA_SOURCE#>" class="btn btn-default "><#LANG_CANCEL#></a>
+
+                </div>
+            </div>
+
+            <!-- разграничение прав доступа к терминалам -->
+            [#if ID!=""#]
+            <div class="form-group ">
+                <label class="col-lg-4 control-label" for="inputTitle"><#LANG_ACCESS_CONTROL#>:<#LANG_HCB#>access_control<#LANG_HCE#></label>
+                <div class="col-lg-5">
+                    <a class="btn btn-default " href="?(panel:{action=security_rules})&object_type=gps_device&object_id=[#ID#]&print=1" onClick="return openModalTWindow('security', '<#LANG_ACCESS_CONTROL#>', this.href, 800, 600);" target=_blank><#LANG_SET#></a>
+                </div>
+            </div>
+            [#endif ID#]
+            <!-- разграничение прав доступа к терминалам -->
+
+            <input type="hidden" name="id" value="<#ID#>">
+            <input type="hidden" name="view_mode" value="<#VIEW_MODE#>">
+            <input type="hidden" name="edit_mode" value="<#EDIT_MODE#>">
+            <input type="hidden" name="mode" value="update">
+            <input type="hidden" name="data_source" value="<#DATA_SOURCE#>">
+        </form>
+
+        [#if LOCATIONS#]
+        <h4><#LANG_HISTORY#></h4>
+        <table class="table">
+            [#begin LOCATIONS#]
+            <tr>
+                <td><a href="?data_source=gpslocations&view_mode=edit_gpslocations&id=[#LOCATION_ID#]">[#TITLE#]</a></td>
+                <td>[#LAST_SEEN#]</td>
+            </tr>
+            [#end LOCATIONS#]
+        </table>
+        [#endif LOCATIONS#]
+
     </div>
-[#endif ID#]
-<!-- разграничение прав доступа к терминалам -->
-
-<input type="hidden" name="id" value="<#ID#>">
-<input type="hidden" name="view_mode" value="<#VIEW_MODE#>">
-<input type="hidden" name="edit_mode" value="<#EDIT_MODE#>">
-<input type="hidden" name="mode" value="update">
-<input type="hidden" name="data_source" value="<#DATA_SOURCE#>">
-</form>
-
-[#if ID!=""#]
-<pre>
+    <div class="col-md-7">
+        [#if ID!=""#]
+        <pre>
     &#091;#module name="app_gpstrack" device_id="<#ID#>" action="track" width="100%" height="300px"#&#093;
 </pre>
 
- [#module name="app_gpstrack" device_id="<#ID#>" action="track" width="100%" height="300px"#]
+        [#module name="app_gpstrack" device_id="<#ID#>" action="track" width="100%" height="300px"#]
 
-[#endif ID#]
+        [#endif ID#]
+
+    </div>
+</div>
+
+

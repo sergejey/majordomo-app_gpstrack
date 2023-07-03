@@ -93,6 +93,20 @@
             <input type="hidden" name="mode" value="update">
             <input type="hidden" name="data_source" value="<#DATA_SOURCE#>">
         </form>
+
+        [#if DEVICES#]
+        <h4><#LANG_HISTORY#></h4>
+        <table class="table">
+            [#begin DEVICES#]
+            <tr>
+                <td><a href="?data_source=gpsdevices&view_mode=edit_gpsdevices&id=[#DEVICE_ID#]">[#TITLE#]</a></td>
+                <td>[#LAST_SEEN#]</td>
+            </tr>
+            [#end DEVICES#]
+        </table>
+        [#endif DEVICES#]
+
+
     </div>
     <div class="col-md-6">
         [#if API_KEY!=""#]

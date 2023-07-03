@@ -173,7 +173,7 @@
 [#if "<#IS_SET_DEVICE_ID#>"!="1"#]
  <td>
   [#if DEVICE_TITLE!=""#]
-   <b>[#DEVICE_TITLE#]</b>
+   <b><a href="?data_source=gpsdevices&view_mode=edit_gpsdevices&id=[#DEVICE_ID#]">[#DEVICE_TITLE#]</a></b>
   [#else#]
    &nbsp;
   [#endif#]
@@ -182,15 +182,15 @@
 [#if "<#IS_SET_LOCATION_ID#>"!="1"#]
  <td>
   [#if LOCATION_TITLE!=""#]
-   <b>[#LOCATION_TITLE#]</b>
+   <b><a href="?data_source=gpslocations&view_mode=edit_gpslocations&id=[#LOCATION_ID#]">[#LOCATION_TITLE#]</a></b>
   [#else#]
    &nbsp;
   [#endif#]
   [#if "<#MAPPROVIDER#>"=="google"#]
-  <a href="http://www.google.com/maps/place/[#LAT#],[#LON#]" target="_blank"><#LANG_MAP#></a>
+  (<a href="http://www.google.com/maps/place/[#LAT#],[#LON#]" target="_blank"><#LANG_MAP#></a>)
   [#endif MAPPROVIDER#]
   [#if "<#MAPPROVIDER#>"=="yandex"#]
-  <a href="https://static-maps.yandex.ru/1.x/?l=[#if "<#MAPTYPE#>"=="hybrid"#]sat,skl[#endif#][#if "<#MAPTYPE#>"=="map"#]map[#endif#][#if "<#MAPTYPE#>"=="satellite"#]sat[#endif#]&ll=[#LON#],[#LAT#]&pt=[#LON#],[#LAT#]&size=450,450&z=16" target=_blank><#LANG_MAP#></a>
+  (<a href="https://static-maps.yandex.ru/1.x/?l=[#if "<#MAPTYPE#>"=="hybrid"#]sat,skl[#endif#][#if "<#MAPTYPE#>"=="map"#]map[#endif#][#if "<#MAPTYPE#>"=="satellite"#]sat[#endif#]&ll=[#LON#],[#LAT#]&pt=[#LON#],[#LAT#]&size=450,450&z=16" target=_blank><#LANG_MAP#></a>)
   [#endif MAPPROVIDER#]
  </td>
 [#endif IS_SET_LOCATION_ID#]

@@ -92,3 +92,11 @@
    }
   }
   outHash($rec, $out);
+
+
+if ($rec['ID']) {
+    $locations = SQLSelect("SELECT gpslocations.TITLE, LOCATION_ID, MAX(ADDED) as LAST_SEEN FROM gpslog LEFT JOIN gpslocations ON gpslog.LOCATION_ID=gpslocations.ID WHERE LOCATION_ID!=0 AND DEVICE_ID=".$rec['ID']." GROUP BY LOCATION_ID ORDER BY LAST_SEEN DESC");
+    if (isset($locations[0])) {
+        $out['LOCATIONS']=$locations;
+    }
+}

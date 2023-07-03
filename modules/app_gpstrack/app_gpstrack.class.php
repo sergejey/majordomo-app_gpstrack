@@ -37,19 +37,19 @@ class app_gpstrack extends module
     function saveParams($data = 0)
     {
         $p = array();
-        if (IsSet($this->id)) {
+        if (isset($this->id)) {
             $p["id"] = $this->id;
         }
-        if (IsSet($this->view_mode)) {
+        if (isset($this->view_mode)) {
             $p["view_mode"] = $this->view_mode;
         }
-        if (IsSet($this->edit_mode)) {
+        if (isset($this->edit_mode)) {
             $p["edit_mode"] = $this->edit_mode;
         }
-        if (IsSet($this->data_source)) {
+        if (isset($this->data_source)) {
             $p["data_source"] = $this->data_source;
         }
-        if (IsSet($this->tab)) {
+        if (isset($this->tab)) {
             $p["tab"] = $this->tab;
         }
         return parent::saveParams($p);
@@ -109,10 +109,10 @@ class app_gpstrack extends module
         } else {
             $this->usual($out);
         }
-        if (IsSet($this->owner->action)) {
+        if (isset($this->owner->action)) {
             $out['PARENT_ACTION'] = $this->owner->action;
         }
-        if (IsSet($this->owner->name)) {
+        if (isset($this->owner->name)) {
             $out['PARENT_NAME'] = $this->owner->name;
         }
         $out['VIEW_MODE'] = $this->view_mode;
@@ -121,22 +121,22 @@ class app_gpstrack extends module
         $out['ACTION'] = $this->action;
         $out['DATA_SOURCE'] = $this->data_source;
         $out['TAB'] = $this->tab;
-        if (IsSet($this->device_id)) {
+        if (isset($this->device_id)) {
             $out['IS_SET_DEVICE_ID'] = 1;
         }
-        if (IsSet($this->location_id)) {
+        if (isset($this->location_id)) {
             $out['IS_SET_LOCATION_ID'] = 1;
         }
-        if (IsSet($this->user_id)) {
+        if (isset($this->user_id)) {
             $out['IS_SET_USER_ID'] = 1;
         }
-        if (IsSet($this->location_id)) {
+        if (isset($this->location_id)) {
             $out['IS_SET_LOCATION_ID'] = 1;
         }
-        if (IsSet($this->user_id)) {
+        if (isset($this->user_id)) {
             $out['IS_SET_USER_ID'] = 1;
         }
-        if (IsSet($this->script_id)) {
+        if (isset($this->script_id)) {
             $out['IS_SET_SCRIPT_ID'] = 1;
         }
         if ($this->single_rec) {
@@ -157,12 +157,13 @@ class app_gpstrack extends module
     function admin(&$out)
     {
         $this->getConfig();
-        $out['MAPPROVIDER'] = $this->config['MAPPROVIDER'];
-        $out['MAPTYPE'] = $this->config['MAPTYPE'];
-        $out['MAX_ACCURACY'] = $this->config['MAX_ACCURACY'];
-        $out['AUTO_OPTIMIZE'] = (int)$this->config['AUTO_OPTIMIZE'];
-        $out['KEEP_HISTORY'] = (int)$this->config['KEEP_HISTORY'];
-        $out['API_KEY'] = $this->config['API_KEY'];
+        $out['MAPPROVIDER'] = $this->config['MAPPROVIDER'] ?? "";
+        $out['MAPTYPE'] = $this->config['MAPTYPE'] ?? "";
+        $out['MAX_ACCURACY'] = $this->config['MAX_ACCURACY'] ?? "";
+        $out['AUTO_OPTIMIZE'] = (int)$this->config['AUTO_OPTIMIZE'] ?? "";
+        $out['OPTIMIZE_DISTANCE'] = (float)$this->config['OPTIMIZE_DISTANCE'] ?? "";
+        $out['KEEP_HISTORY'] = (int)$this->config['KEEP_HISTORY'] ?? "";
+        $out['API_KEY'] = $this->config['API_KEY'] ?? "";
         if ($this->view_mode == 'update_settings') {
             global $mapprovider;
             $this->config['MAPPROVIDER'] = $mapprovider;
@@ -173,6 +174,7 @@ class app_gpstrack extends module
             global $api_key;
             $this->config['API_KEY'] = $api_key;
             $this->config['AUTO_OPTIMIZE'] = gr('auto_optimize', 'int');
+            $this->config['OPTIMIZE_DISTANCE'] = (float)gr('optimize_distance');
             $this->config['KEEP_HISTORY'] = gr('keep_history', 'int');
             $this->saveConfig();
             if ($this->config['AUTO_OPTIMIZE']) {
@@ -397,26 +399,63 @@ class app_gpstrack extends module
         SQLExec("DELETE FROM gpsactions WHERE ID='" . $rec['ID'] . "'");
     }
 
-    function optimize_log($verbose = 0) {
+    function optimize_log($verbose = 0)
+    {
         set_time_limit(6000);
 
-        $tmp=SQLSelectOne("SELECT COUNT(*) as TOTAL FROM gpslog");
-        $before=(int)$tmp['TOTAL'];
+        $optimize_distance = (float)($this->config['OPTIMIZE_DISTANCE'] ?? "");
 
-        $records = SQLSelect("SELECT gpslog.ID, gpslog.DEVICEID, gpslog.LOCATION_ID, gpsdevices.ID AS GPS_DEVICE_ID FROM gpslog LEFT JOIN gpsdevices ON gpslog.DEVICE_ID=gpsdevices.ID ORDER BY gpslog.DEVICEID, gpslog.ADDED DESC");
-        DebMes("Staring GPS data optimizing (total: $before)",'gps');
+        $tmp = SQLSelectOne("SELECT COUNT(*) as TOTAL FROM gpslog");
+        $before = (int)$tmp['TOTAL'];
+
+        $records = SQLSelect("SELECT gpslog.ID, gpslog.DEVICEID, gpslog.LAT, gpslog.LON, gpslog.LOCATION_ID, gpsdevices.ID AS GPS_DEVICE_ID FROM gpslog LEFT JOIN gpsdevices ON gpslog.DEVICE_ID=gpsdevices.ID ORDER BY gpslog.DEVICEID, gpslog.ADDED DESC");
+        DebMes("Staring GPS data optimizing (total: $before)", 'gps');
         $total = count($records);
         for ($i = 1; $i < $total - 1; $i++) {
+
             if (!$records[$i]['GPS_DEVICE_ID']) {
                 SQLExec("DELETE FROM gpslog WHERE ID=" . $records[$i]['ID']);
                 continue;
             }
-            if (!$records[$i]['LOCATION_ID']) continue;
-            if ($records[$i]['LOCATION_ID'] == $records[$i + 1]['LOCATION_ID'] && $records[$i]['LOCATION_ID'] == $records[$i - 1]['LOCATION_ID']
-                && $records[$i]['GPS_DEVICE_ID'] == $records[$i + 1]['GPS_DEVICE_ID'] && $records[$i]['GPS_DEVICE_ID'] == $records[$i - 1]['GPS_DEVICE_ID']
-            ) {
+
+            //if (!$records[$i]['LOCATION_ID']) continue;
+
+            $delete_record = false;
+            $delete_reason = "";
+
+            if ($records[$i]['GPS_DEVICE_ID'] == $records[$i + 1]['GPS_DEVICE_ID']
+                && $records[$i]['GPS_DEVICE_ID'] == $records[$i - 1]['GPS_DEVICE_ID']) {
+                // same device
+                if (
+                    $records[$i]['LOCATION_ID']
+                    && $records[$i]['LOCATION_ID'] == $records[$i + 1]['LOCATION_ID']
+                    && $records[$i]['LOCATION_ID'] == $records[$i - 1]['LOCATION_ID']) {
+                    $delete_record = true;
+                    $delete_reason = 'Same location.';
+                } elseif (
+                    $records[$i]['LAT'] == $records[$i + 1]['LAT']
+                    && $records[$i]['LON'] == $records[$i + 1]['LON']
+                    && $records[$i]['LAT'] == $records[$i - 1]['LAT']
+                    && $records[$i]['LON'] == $records[$i - 1]['LON']
+                ) {
+                    $delete_record = true;
+                    $delete_reason = 'Same coordinates.';
+                } elseif ($optimize_distance > 0) {
+                    $distance1 = $this->calculateTheDistance($records[$i]['LAT'],$records[$i]['LON'],$records[$i + 1]['LAT'],$records[$i + 1]['LON']);
+                    $distance2 = $this->calculateTheDistance($records[$i]['LAT'],$records[$i]['LON'],$records[$i - 1]['LAT'],$records[$i - 1]['LON']);
+                    if ($distance1<=$optimize_distance && $distance2<=$optimize_distance) {
+                        $delete_record = true;
+                        $delete_reason = 'Close coordinates.';
+                    }
+                }
+            }
+
+
+            if ($delete_record) {
+                dprint($delete_reason, false);
                 SQLExec("DELETE FROM gpslog WHERE ID=" . $records[$i]['ID']);
             }
+
             if ($verbose && $i % 200 == 0) {
                 echo ".";
                 echo str_repeat(' ', 1024);
@@ -426,11 +465,48 @@ class app_gpstrack extends module
         }
         SQLExec("OPTIMIZE TABLE `gpslog`");
 
-        $tmp=SQLSelectOne("SELECT COUNT(*) as TOTAL FROM gpslog");
-        $after=(int)$tmp['TOTAL'];
+        $tmp = SQLSelectOne("SELECT COUNT(*) as TOTAL FROM gpslog");
+        $after = (int)$tmp['TOTAL'];
 
-        DebMes("Finished GPS data optimizing (total: $after)",'gps');
+        DebMes("Finished GPS data optimizing (total: $after)", 'gps');
     }
+
+    /**
+     * Calculate distance between two GPS coordinates
+     * @param mixed $latA First coord latitude
+     * @param mixed $lonA First coord longitude
+     * @param mixed $latB Second coord latitude
+     * @param mixed $lonB Second coord longitude
+     * @return double
+     */
+    function calculateTheDistance($latA, $lonA, $latB, $lonB)
+    {
+        define('EARTH_RADIUS', 6372795);
+
+        $lat1 = $latA * M_PI / 180;
+        $lat2 = $latB * M_PI / 180;
+        $long1 = $lonA * M_PI / 180;
+        $long2 = $lonB * M_PI / 180;
+
+        $cl1 = cos($lat1);
+        $cl2 = cos($lat2);
+        $sl1 = sin($lat1);
+        $sl2 = sin($lat2);
+
+        $delta = $long2 - $long1;
+        $cdelta = cos($delta);
+        $sdelta = sin($delta);
+
+        $y = sqrt(pow($cl2 * $sdelta, 2) + pow($cl1 * $sl2 - $sl1 * $cl2 * $cdelta, 2));
+        $x = $sl1 * $sl2 + $cl1 * $cl2 * $cdelta;
+
+        $ad = atan2($y, $x);
+
+        $dist = round($ad * EARTH_RADIUS);
+
+        return $dist;
+    }
+
 
     function processSubscription($event_name, $details = '')
     {
@@ -438,7 +514,7 @@ class app_gpstrack extends module
             //...
             $this->getConfig();
             if ($this->config['KEEP_HISTORY']) {
-                SQLExec("DELETE FROM gpslog WHERE ADDED<'".date('Y-m-d H:i:s',(time()-$this->config['KEEP_HISTORY']*24*60*60))."'");
+                SQLExec("DELETE FROM gpslog WHERE ADDED<'" . date('Y-m-d H:i:s', (time() - $this->config['KEEP_HISTORY'] * 24 * 60 * 60)) . "'");
             }
             if ($this->config['AUTO_OPTIMIZE'] && ((int)date('H')) == 3) {
                 $this->optimize_log();

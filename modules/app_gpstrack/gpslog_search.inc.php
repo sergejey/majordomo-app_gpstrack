@@ -11,6 +11,7 @@ if ($clear_log) {
 
 global $optimize_log;
 if ($optimize_log) {
+    $this->getConfig();
     $this->optimize_log(1);
     echo " DONE";
     echo str_repeat(' ', 1024);
