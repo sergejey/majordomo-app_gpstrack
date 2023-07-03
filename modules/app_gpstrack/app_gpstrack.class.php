@@ -331,6 +331,7 @@ class app_gpstrack extends module
     {
         $rec = SQLSelectOne("SELECT * FROM gpslocations WHERE ID='$id'");
         // some action for related tables
+        SQLExec("UPDATE gpslog SET LOCATION_ID=0 WHERE LOCATION_ID='" . $rec['ID'] . "'");
         SQLExec("DELETE FROM gpslocations WHERE ID='" . $rec['ID'] . "'");
     }
 
@@ -452,7 +453,7 @@ class app_gpstrack extends module
 
 
             if ($delete_record) {
-                dprint($delete_reason, false);
+                //dprint($delete_reason, false);
                 SQLExec("DELETE FROM gpslog WHERE ID=" . $records[$i]['ID']);
             }
 
