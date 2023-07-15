@@ -104,6 +104,31 @@ function updateRoute(device_id, color) {
 }
 
 
+function createMarker(markerData) {
+    let temp_id=markerData.ID;
+    let myLatLng = {lat: parseFloat(markerData.LAT), lng: parseFloat(markerData.LON)};
+
+    let numberMarkerImg = {
+        url: '<#ROOTHTML#>modules/app_gpstrack/marker.php?color='+encodeURIComponent(markerData.COLOR),
+        size: new google.maps.Size(24, 24),
+        scaledSize: new google.maps.Size(24, 24),
+        labelOrigin: new google.maps.Point(12, -10),
+    };
+
+    let mapMarker = new google.maps.Marker({
+        temp_id: temp_id,
+        icon: numberMarkerImg,
+        position: myLatLng,
+        map: map,
+        label: (markerData.NAME!=''?markerData.NAME:undefined),
+        title: (markerData.NAME!=''?markerData.NAME+' / ':'')+markerData.TITLE+' ('+markerData.PASSED+')',
+        infoWindow: {
+            content: markerData.HTML
+        }
+    });
+    return mapMarker;
+}
+
 function updateMarkers() {
  var url="?";
  url+='&ajax=1&op=getmarkers';
@@ -118,18 +143,7 @@ function updateMarkers() {
 		var marker=markers[i];
 		var temp_id=marker.ID;
 			if (!checkMarkerExists(temp_id)) {
-				var myLatLng = {lat: parseFloat(marker.LAT), lng: parseFloat(marker.LON)};
-				var mapMarker = new google.maps.Marker({
-					temp_id: temp_id,
-					icon: '<#ROOTHTML#>modules/app_gpstrack/marker.php?color='+encodeURIComponent(marker.COLOR),
-					position: myLatLng,
-					map: map,
-					title: marker.NAME,
-					infoWindow: {
-						content: marker.HTML
-					}
-				});
-				map.markers.push(mapMarker);
+				map.markers.push(createMarker(marker));
 			} else {
 				mk=getMarkerIndex(temp_id);
 				var marker_obj=map.markers[mk];

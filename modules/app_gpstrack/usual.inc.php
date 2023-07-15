@@ -72,7 +72,10 @@ for ($i = 0; $i < $total; $i++) {
 	}
     if (!$out['DEVICES'][$i]['COLOR'])
         $out['DEVICES'][$i]['COLOR'] = $colors[$i];
+
     $update_tm=strtotime($out['DEVICES'][$i]['UPDATED']);
+    $out['DEVICES'][$i]['PASSED']=getPassedText($update_tm);
+
     if ($this->action=='track' && !$this->device_id) {
         if ((time()-$update_tm)<24*60*60) {
             $res_devices[]=$out['DEVICES'][$i];
