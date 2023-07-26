@@ -122,7 +122,7 @@ if ($ajax) {
         $points = array();
         for ($i = 0; $i < $total; $i++) {
             $coords[] = array($log[$i]['LAT'], $log[$i]['LON']);
-            $points[] = array('ID' => $log[$i]['ID'], 'LAT' => $log[$i]['LAT'], 'LON' => $log[$i]['LON'], 'TITLE' => $device['TITLE'] . ' (' . $log[$i]['ADDED'] . ')');
+            $points[] = array('ID' => $log[$i]['ID'], 'LAT' => $log[$i]['LAT'], 'LON' => $log[$i]['LON'], 'ALT' => $log[$i]['ALT'], 'SPEED' => $log[$i]['SPEED'], 'ACCURACY' => $log[$i]['ACCURACY'],'ADDED' => $log[$i]['ADDED'], 'TITLE' => $device['TITLE'] . ' (' . $log[$i]['ADDED'] . ')');
         }
         $res = array();
         if ($total) {
