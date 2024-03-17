@@ -122,7 +122,7 @@ if ($ajax) {
         $points = array();
         for ($i = 0; $i < $total; $i++) {
             $coords[] = array($log[$i]['LAT'], $log[$i]['LON']);
-            $points[] = array('ID' => $log[$i]['ID'], 'LAT' => $log[$i]['LAT'], 'LON' => $log[$i]['LON'], 'ALT' => $log[$i]['ALT'], 'SPEED' => $log[$i]['SPEED'], 'ACCURACY' => $log[$i]['ACCURACY'],'PROVIDER' => $log[$i]['PROVIDER'],'ADDED' => $log[$i]['ADDED'], 'TITLE' => $device['TITLE'] . ' (' . $log[$i]['ADDED'] . ')');
+            $points[] = array('ID' => $log[$i]['ID'], 'LAT' => $log[$i]['LAT'], 'LON' => $log[$i]['LON'], 'TITLE' => $device['TITLE'] . ' (' . $log[$i]['ADDED'] . ')');
         }
         $res = array();
         if ($total) {
@@ -144,21 +144,6 @@ if ($ajax) {
         global $id_log;
         SQLExec("DELETE FROM gpslog WHERE ID=".$id_log);
         echo "Ok";
-    }
-    if ($op == 'edit_log') {
-        global $id;
-        global $lat;
-        global $lon;
-        $rec = SQLSelectOne("select * FROM gpslog WHERE ID=".$id);
-        if (isset($rec["ID"]))
-        {
-            $rec["LAT"] = $lat;
-            $rec["LON"] = $lon;
-            SQLUpdate("gpslog", $rec);
-            echo "Ok";
-        }
-        else
-            echo "Not found";
     }
 
     exit;

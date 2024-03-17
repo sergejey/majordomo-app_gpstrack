@@ -98,7 +98,13 @@ if ($_REQUEST['op'] != '') {
     exit;
 }
 
-if ($_REQUEST['latitude']!='' && $_REQUEST['longitude']!='' && $_REQUEST['latitude']!='0' && $_REQUEST['longitude']!='0') {
+if ($_REQUEST['latitude'] != '' && $_REQUEST['longitude'] != '' && $_REQUEST['latitude'] != '0' && $_REQUEST['longitude'] != '0') {
+
+    include_once("./modules/app_gpstrack/app_gpstrack.class.php");
+    $gpstrack = new app_gpstrack();
+    $gpstrack->getConfig();
+    $max_accuracy = $gpstrack->config['MAX_ACCURACY'];
+
     //DebMes("GPS DATA RECEIVED: \n".serialize($_REQUEST));
     if ($_REQUEST['deviceid']) {
         $sqlQuery = "SELECT *
@@ -132,12 +138,6 @@ if ($_REQUEST['latitude']!='' && $_REQUEST['longitude']!='' && $_REQUEST['latitu
         SQLUpdate('gpsdevices', $device);
     }
 
-    include_once("./modules/app_gpstrack/app_gpstrack.class.php");
-    $gpstrack = new app_gpstrack();
-    $gpstrack->getConfig();
-    $max_accuracy = $gpstrack->config['MAX_ACCURACY'];
-    unset($gpstrack);
-
     $rec = array();
 
     //$rec['ADDED']     = ($time) ? $time : date('Y-m-d H:i:s');
@@ -153,15 +153,15 @@ if ($_REQUEST['latitude']!='' && $_REQUEST['longitude']!='' && $_REQUEST['latitu
     $rec['ACCURACY'] = isset($_REQUEST['accuracy']) ? $_REQUEST['accuracy'] : 0;
 
     if (($max_accuracy != 0) && ($rec['ACCURACY'] > $max_accuracy)) {
-        DebMes("GPS Accuracy {$rec['ACCURACY']} > {$max_accuracy} exiting!",'gps');
+        DebMes("GPS Accuracy {$rec['ACCURACY']} > {$max_accuracy} exiting!", 'gps');
         $db->Disconnect();
         exit;
     }
 
-    if ($device['ID'])
-        $rec['DEVICE_ID'] = $device['ID'];
+    if ($device['ID']) $rec['DEVICE_ID'] = $device['ID'];
 
     $rec['ID'] = SQLInsert('gpslog', $rec);
+    $address = $gpstrack->updateLogAddress($rec['ID']);
 
     $sqlQuery = "SELECT *
                         FROM gpslog
@@ -189,7 +189,7 @@ if ($_REQUEST['latitude']!='' && $_REQUEST['longitude']!='' && $_REQUEST['latitu
             }
 
             if ($previous_log_record['ID']) {
-                $distance = calculateTheDistance($rec['LAT'], $rec['LON'], $previous_log_record['LAT'], $previous_log_record['LON']);
+                $distance = $gpstrack->calculateTheDistance($rec['LAT'], $rec['LON'], $previous_log_record['LAT'], $previous_log_record['LON']);
 
                 if ($distance > 100) {
                     //we're moving
@@ -218,7 +218,7 @@ if ($_REQUEST['latitude']!='' && $_REQUEST['longitude']!='' && $_REQUEST['latitu
         if (!$locations[$i]['RANGE'])
             $locations[$i]['RANGE'] = GPS_LOCATION_RANGE_DEFAULT;
 
-        $distance = calculateTheDistance($lat, $lon, $locations[$i]['LAT'], $locations[$i]['LON']);
+        $distance = $gpstrack->calculateTheDistance($lat, $lon, $locations[$i]['LAT'], $locations[$i]['LON']);
 
         if ($locations[$i]['IS_HOME'] && $device['ID']) {
             $device['HOME_DISTANCE'] = (int)$distance;
@@ -249,7 +249,7 @@ if ($_REQUEST['latitude']!='' && $_REQUEST['longitude']!='' && $_REQUEST['latitu
 
 
             if ($previous_log_record['LOCATION_ID'] != $locations[$i]['ID']) {
-                Debmes("Device (" . $device['TITLE'] . ") ENTERED location " . $locations[$i]['TITLE'].' (prev record: '.json_encode($previous_log_record).')','gps');
+                Debmes("Device (" . $device['TITLE'] . ") ENTERED location " . $locations[$i]['TITLE'] . ' (prev record: ' . json_encode($previous_log_record) . ')', 'gps');
 
                 if ($locations[$i]['LINKED_OBJECT']) {
                     setGlobal($locations[$i]['LINKED_OBJECT'] . '.latestVisit', date('Y-m-d H:i:s'));
@@ -297,7 +297,7 @@ if ($_REQUEST['latitude']!='' && $_REQUEST['longitude']!='' && $_REQUEST['latitu
         } else {
 
             if ($previous_log_record['LOCATION_ID'] == $locations[$i]['ID']) {
-                Debmes("Device (" . $device['TITLE'] . ") LEFT location " . $locations[$i]['TITLE'].' (prev record: '.json_encode($previous_log_record).')','gps');
+                Debmes("Device (" . $device['TITLE'] . ") LEFT location " . $locations[$i]['TITLE'] . ' (prev record: ' . json_encode($previous_log_record) . ')', 'gps');
 
                 if ($locations[$i]['LINKED_OBJECT']) {
                     callMethodSafe($locations[$i]['LINKED_OBJECT'] . '.userLeft', $params);
@@ -341,7 +341,9 @@ if ($_REQUEST['latitude']!='' && $_REQUEST['longitude']!='' && $_REQUEST['latitu
     }
 }
 if ($user['LINKED_OBJECT'] && !$location_found) {
-    $address = $_REQUEST['address'];
+    if (isset($_REQUEST['address'])) {
+        $address = $_REQUEST['address'];
+    }
     if ($address)
         setGlobal($user['LINKED_OBJECT'] . '.seenAt', $address);
     else
@@ -371,38 +373,3 @@ $db->Disconnect();
 
 endMeasure('TOTAL'); // end calculation of execution time
 
-/**
- * Calculate distance between two GPS coordinates
- * @param mixed $latA First coord latitude
- * @param mixed $lonA First coord longitude
- * @param mixed $latB Second coord latitude
- * @param mixed $lonB Second coord longitude
- * @return double
- */
-function calculateTheDistance($latA, $lonA, $latB, $lonB)
-{
-    define('EARTH_RADIUS', 6372795);
-
-    $lat1 = $latA * M_PI / 180;
-    $lat2 = $latB * M_PI / 180;
-    $long1 = $lonA * M_PI / 180;
-    $long2 = $lonB * M_PI / 180;
-
-    $cl1 = cos($lat1);
-    $cl2 = cos($lat2);
-    $sl1 = sin($lat1);
-    $sl2 = sin($lat2);
-
-    $delta = $long2 - $long1;
-    $cdelta = cos($delta);
-    $sdelta = sin($delta);
-
-    $y = sqrt(pow($cl2 * $sdelta, 2) + pow($cl1 * $sl2 - $sl1 * $cl2 * $cdelta, 2));
-    $x = $sl1 * $sl2 + $cl1 * $cl2 * $cdelta;
-
-    $ad = atan2($y, $x);
-
-    $dist = round($ad * EARTH_RADIUS);
-
-    return $dist;
-}

@@ -109,7 +109,7 @@
 
     </div>
     <div class="col-md-6">
-        [#if API_KEY!=""#]
+        [#if API_KEY!="" && MAPPROVIDER=="google"#]
         <form method="get" class="form-inline">
             <div class="form-group">
              <input type="text" value="" placeholder="Address..." name="address" class="form-control" id="address">

@@ -55,6 +55,12 @@ if ($user_id) {
     $out['SEARCHING']=1;
 }
 
+$address = gr('address');
+if ($address) {
+    $qry.=" AND ADDRESS!='' AND ADDRESS LIKE '%".DBSafe($address)."%'";
+    $out['ADDRESS'] = htmlspecialchars($address);
+}
+
 $date_to=gr('date_to','trim');
 if ($date_to) {
     $out['DATE_TO']=$date_to;
@@ -97,6 +103,7 @@ $out['SORTBY'] = $sortby_gpslog;
 $res_total = SQLSelectOne("SELECT COUNT(*) as TOTAL FROM gpslog LEFT JOIN gpsdevices ON gpsdevices.ID=gpslog.DEVICE_ID LEFT JOIN gpslocations ON gpslocations.ID=gpslog.LOCATION_ID WHERE $qry");
 require(DIR_MODULES.$this->name.'/Paginator.php');
 $page=gr('page','int');
+$out['PAGE'] = $page;
 if (!$page) $page=1;
 $on_page=50;
 $limit=(($page-1)*$on_page).','.$on_page;

@@ -205,6 +205,18 @@ class app_gpstrack extends module
                 $this->delete_gpslog($this->id);
                 $this->redirect("?data_source=gpslog");
             }
+            if ($this->view_mode == 'resolve_gpslog') {
+                $this->updateLogAddress($this->id, 25);
+                $this->redirect("?data_source=gpslog&address="
+                    . urlencode(gr('address'))
+                    . "&page=" . urlencode(gr('page'))
+                    . "&user_id=" . urlencode(gr('user_id'))
+                    . "&device_id=" . urlencode(gr('device_id'))
+                    . "&location_id=" . urlencode(gr('location_id'))
+                    . "&date_from=" . urlencode(gr('date_from'))
+                    . "&date_to=" . urlencode(gr('date_to'))
+                );
+            }
         }
         if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
             $out['SET_DATASOURCE'] = 1;
@@ -442,9 +454,9 @@ class app_gpstrack extends module
                     $delete_record = true;
                     $delete_reason = 'Same coordinates.';
                 } elseif ($optimize_distance > 0) {
-                    $distance1 = $this->calculateTheDistance($records[$i]['LAT'],$records[$i]['LON'],$records[$i + 1]['LAT'],$records[$i + 1]['LON']);
-                    $distance2 = $this->calculateTheDistance($records[$i]['LAT'],$records[$i]['LON'],$records[$i - 1]['LAT'],$records[$i - 1]['LON']);
-                    if ($distance1<=$optimize_distance && $distance2<=$optimize_distance) {
+                    $distance1 = $this->calculateTheDistance($records[$i]['LAT'], $records[$i]['LON'], $records[$i + 1]['LAT'], $records[$i + 1]['LON']);
+                    $distance2 = $this->calculateTheDistance($records[$i]['LAT'], $records[$i]['LON'], $records[$i - 1]['LAT'], $records[$i - 1]['LON']);
+                    if ($distance1 <= $optimize_distance && $distance2 <= $optimize_distance) {
                         $delete_record = true;
                         $delete_reason = 'Close coordinates.';
                     }
@@ -453,7 +465,6 @@ class app_gpstrack extends module
 
 
             if ($delete_record) {
-                //dprint($delete_reason, false);
                 SQLExec("DELETE FROM gpslog WHERE ID=" . $records[$i]['ID']);
             }
 
@@ -470,6 +481,75 @@ class app_gpstrack extends module
         $after = (int)$tmp['TOTAL'];
 
         DebMes("Finished GPS data optimizing (total: $after)", 'gps');
+    }
+
+    function updateLogAddress($id, $update_nearest_logs = 0)
+    {
+        $log = SQLSelectOne("SELECT * FROM gpslog WHERE ID=" . $id);
+        if (!$log['ID']) return false;
+        $address = $this->getAddress($log['LAT'], $log['LON']);
+        if ($address != '') {
+            $log['ADDRESS'] = $address;
+            SQLUpdate('gpslog', $log);
+            if ($update_nearest_logs > 0) {
+                $locations = SQLSelect("SELECT *, ST_Distance_Sphere( point ('" . $log['LON'] . "', '" . $log['LAT'] . "'), 
+                              point(LON, LAT)) 
+          as `distance` FROM `gpslog` WHERE ADDRESS='' HAVING `distance` <= '" . (int)$update_nearest_logs . "' ORDER BY `distance` ASC");
+
+                $total = count($locations);
+                for ($i = 0; $i < $total; $i++) {
+                    unset($locations[$i]['distance']);
+                    $locations[$i]['ADDRESS'] = $address;
+                    SQLUpdate('gpslog', $locations[$i]);
+                }
+
+            }
+        }
+        return $address;
+    }
+
+    function getAddress($lat, $lon)
+    {
+        $this->getConfig();
+        $provider = $this->config['MAPPROVIDER'];
+        $api_key = $this->config['API_KEY'];
+
+        $address = '';
+
+        if ($provider == 'google' && $api_key) {
+
+            $url = 'https://maps.googleapis.com/maps/api/geocode/json?latlng=' . $lat . ',' . $lon . '&key=' . $api_key . "&language=" . SETTINGS_SITE_LANGUAGE;
+            $result = json_decode(getURL($url), true);
+            if (isset($result['results'][0]['formatted_address'])) {
+                $address = $result['results'][0]['formatted_address'];
+                $tmp = explode(',', $address);
+                if (count($tmp) == 3) {
+                    $address = $tmp[0];
+                } elseif (count($tmp) == 4) {
+                    $address = $tmp[1];
+                }
+            }
+        } elseif ($provider == 'yandex' && $api_key) {
+            $url = 'https://geocode-maps.yandex.ru/1.x?apikey=' . $api_key . '&geocode=' . $lat . ',' . $lon . '&lang=ru_RU&sco=latlong&format=json';
+            $result = json_decode(getURL($url), true);
+            if (isset($result['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['metaDataProperty']['GeocoderMetaData']['AddressDetails'])) {
+                $object = $result['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['metaDataProperty']['GeocoderMetaData']['AddressDetails'];
+                if (isset($object['Country']['AdministrativeArea']['SubAdministrativeArea']['Locality'])) {
+                    $address = $object['Country']['AdministrativeArea']['SubAdministrativeArea']['Locality']['LocalityName'];
+                    if (isset($object['Country']['AdministrativeArea']['SubAdministrativeArea']['Locality']['Thoroughfare'])) {
+                        $address .= ', ' . $object['Country']['AdministrativeArea']['SubAdministrativeArea']['Locality']['Thoroughfare']['ThoroughfareName'];
+                        if (isset($object['Country']['AdministrativeArea']['SubAdministrativeArea']['Locality']['Thoroughfare']['Premise'])) {
+                            $address .= ', ' . $object['Country']['AdministrativeArea']['SubAdministrativeArea']['Locality']['Thoroughfare']['Premise']['PremiseNumber'];
+                        }
+                    }
+                }
+                if (!$address && isset($result['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['name'])) {
+                    $address = $result['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['name'];
+                }
+            }
+        }
+        $address = trim($address, ', ');
+        return $address;
     }
 
     /**
@@ -582,6 +662,7 @@ class app_gpstrack extends module
  gpslog: LON float DEFAULT '0' NOT NULL
  gpslog: ALT float DEFAULT '0' NOT NULL
  gpslog: PROVIDER varchar(30) NOT NULL DEFAULT ''
+ gpslog: ADDRESS varchar(255) NOT NULL DEFAULT ''
  gpslog: SPEED float DEFAULT '0' NOT NULL
  gpslog: BATTLEVEL int(3) NOT NULL DEFAULT '0'
  gpslog: CHARGING int(3) NOT NULL DEFAULT '0'
@@ -646,4 +727,3 @@ EOD;
 * TW9kdWxlIGNyZWF0ZWQgSnVsIDI1LCAyMDExIHVzaW5nIFNlcmdlIEouIHdpemFyZCAoQWN0aXZlVW5pdCBJbmMgd3d3LmFjdGl2ZXVuaXQuY29tKQ==
 *
 */
-?>

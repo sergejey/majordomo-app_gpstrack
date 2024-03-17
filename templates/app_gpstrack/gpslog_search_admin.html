@@ -25,12 +25,15 @@
  </div>
 
  <div class="form-group">
+  <input type="text" placeholder="address..." value="<#ADDRESS#>" name="address" class="form-control " id="address">
+ </div>
 
-   <input type="text" placeholder="from..." value="<#DATE_FROM#>" name="date_from" class="form-control datepicker" id="date_from">
 
+ <div class="form-group">
+   <input type="text" placeholder="date from..." value="<#DATE_FROM#>" name="date_from" class="form-control datepicker" id="date_from">
  </div>
  <div class="form-group">
-   <input type="text" placeholder="to..." value="<#DATE_TO#>" name="date_to" class="form-control datepicker" id="date_to">
+   <input type="text" placeholder="date to..." value="<#DATE_TO#>" name="date_to" class="form-control datepicker" id="date_to">
  </div>
 
 
@@ -182,20 +185,20 @@
 [#endif IS_SET_DEVICE_ID#]
 [#if "<#IS_SET_LOCATION_ID#>"!="1"#]
  <td>
+ &nbsp;[#ADDRESS#]
   [#if LOCATION_TITLE!=""#]
    <b><a href="?data_source=gpslocations&view_mode=edit_gpslocations&id=[#LOCATION_ID#]">[#LOCATION_TITLE#]</a></b>
-  [#else#]
-   &nbsp;
   [#endif#]
   [#if "<#MAPPROVIDER#>"=="google"#]
   (<a href="http://www.google.com/maps/place/[#LAT#],[#LON#]" target="_blank"><#LANG_MAP#></a>)
   [#endif MAPPROVIDER#]
   [#if "<#MAPPROVIDER#>"=="yandex"#]
-  (<a href="https://static-maps.yandex.ru/1.x/?l=[#if "<#MAPTYPE#>"=="hybrid"#]sat,skl[#endif#][#if "<#MAPTYPE#>"=="map"#]map[#endif#][#if "<#MAPTYPE#>"=="satellite"#]sat[#endif#]&ll=[#LON#],[#LAT#]&pt=[#LON#],[#LAT#]&size=450,450&z=16" target=_blank><#LANG_MAP#></a>)
+  (<a href="https://yandex.ru/maps/?l=[#if "<#MAPTYPE#>"=="hybrid"#]sat,skl[#endif#][#if "<#MAPTYPE#>"=="map"#]map[#endif#][#if "<#MAPTYPE#>"=="satellite"#]sat[#endif#]&ll=[#LON#],[#LAT#]&pt=[#LON#],[#LAT#]&size=450,450&z=16" target=_blank><#LANG_MAP#></a>)
   [#endif MAPPROVIDER#]
  </td>
 [#endif IS_SET_LOCATION_ID#]
  <td>
+  <a href="?data_source=<#DATA_SOURCE#>&view_mode=resolve_gpslog&id=[#ID#]&date_from=<#DATE_FROM#>&date_to=<#DATE_TO#>&device_id=<#DEVICE_ID#>&user_id=<#USER_ID#>&address=<#ADDRESS#>&page=<#PAGE#>" title="Resolve address" class="btn btn-sm btn-default"><i class="glyphicon glyphicon-map-marker"></i></a>
     <a href="?data_source=<#DATA_SOURCE#>&view_mode=delete_gpslog&id=[#ID#]" onClick="return confirm('<#LANG_ARE_YOU_SURE#>')" class="btn btn-sm btn-default"><i class="glyphicon glyphicon-remove"></i></a>
  </td>
 </tr>
