@@ -491,7 +491,7 @@ class app_gpstrack extends module
         if ($address != '') {
             $log['ADDRESS'] = $address;
             SQLUpdate('gpslog', $log);
-            if ($update_nearest_logs > 0) {
+            if ($update_nearest_logs > 0 && $this->checkSTDistanceFunctionExists()) {
                 $locations = SQLSelect("SELECT *, ST_Distance_Sphere( point ('" . $log['LON'] . "', '" . $log['LAT'] . "'), 
                               point(LON, LAT)) 
           as `distance` FROM `gpslog` WHERE ADDRESS='' HAVING `distance` <= '" . (int)$update_nearest_logs . "' ORDER BY `distance` ASC");
@@ -510,6 +510,14 @@ class app_gpstrack extends module
 
     function getAddress($lat, $lon)
     {
+        // search for address received previously
+        $point = $this->getNearestLogPoint($lat, $lon, 50, "ADDRESS!=''");
+        if ($point['ID']) {
+            DebMes("Got address from cache (".$point['ADDRESS'].")",'gps');
+            return $point['ADDRESS'];
+        }
+
+        // try to get an address otherwise
         $this->getConfig();
         $provider = $this->config['MAPPROVIDER'];
         $api_key = $this->config['API_KEY'];
@@ -586,6 +594,25 @@ class app_gpstrack extends module
         $dist = round($ad * EARTH_RADIUS);
 
         return $dist;
+    }
+
+    function getNearestLogPoint($lat, $lon, $maxDistance = 50, $query = "1") {
+
+        if (!$this->checkSTDistanceFunctionExists()) {
+            return array();
+        }
+
+        $location = SQLSelectOne("SELECT *, ST_Distance_Sphere( point ('" . $lon . "', '" . $lat . "'), 
+                              point(LON, LAT)) 
+          as `distance` FROM `gpslog` WHERE $query HAVING `distance` <= '" . (int)$maxDistance . "' ORDER BY `distance` ASC LIMIT 1");
+
+        return $location;
+
+    }
+
+    function checkSTDistanceFunctionExists() {
+        $tmp = SQLSelectOne("HELP ST_Distance_Sphere;");
+        return isset($tmp['name']);
     }
 
 

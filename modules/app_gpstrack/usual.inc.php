@@ -11,10 +11,10 @@ global $to;
 global $from;
 
 if (gr('action')) {
-    $this->action=gr('action');
+    $this->action = gr('action');
 }
 
-$colors = array('#BF616A','#D08770','#EBCB8B','#A3BE8C','#B48EAD','red', 'blue', 'green', 'orange', 'brown', 'gray', 'yellow', 'white');
+$colors = array('#BF616A', '#D08770', '#EBCB8B', '#A3BE8C', '#B48EAD', 'red', 'blue', 'green', 'orange', 'brown', 'gray', 'yellow', 'white');
 
 $qry = 1;
 
@@ -48,9 +48,9 @@ if ($this->action == 'track') {
     if (!$out['WIDTH']) $out['WIDTH'] = '300px';
     $out['HEIGHT'] = $this->height;
     if (!$out['HEIGHT']) $out['HEIGHT'] = '300px';
-    $out['UNIQ']=uniqid();
+    $out['UNIQ'] = uniqid();
 } else {
-    $out['UNIQ']='';
+    $out['UNIQ'] = '';
 }
 
 if ($device_id) {
@@ -63,29 +63,29 @@ if ($ajax && $device_id) {
 } else {
     $out['DEVICES'] = SQLSelect("SELECT gpsdevices.*, users.NAME, users.USERNAME, users.AVATAR, users.COLOR FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE 1 ORDER BY users.NAME");
 }
-$res_devices=array();
+$res_devices = array();
 $total = count($out['DEVICES']);
 for ($i = 0; $i < $total; $i++) {
-        // some action for every record if required
+    // some action for every record if required
     if (!checkAccess('gps_device', $out['DEVICES'][$i]['ID'])) {
-		continue;// some action for every record if required
-	}
+        continue;// some action for every record if required
+    }
     if (!$out['DEVICES'][$i]['COLOR'])
         $out['DEVICES'][$i]['COLOR'] = $colors[$i];
 
-    $update_tm=strtotime($out['DEVICES'][$i]['UPDATED']);
-    $out['DEVICES'][$i]['PASSED']=getPassedText($update_tm);
+    $update_tm = strtotime($out['DEVICES'][$i]['UPDATED']);
+    $out['DEVICES'][$i]['PASSED'] = getPassedText($update_tm);
 
-    if ($this->action=='track' && !$this->device_id) {
-        if ((time()-$update_tm)<24*60*60) {
-            $res_devices[]=$out['DEVICES'][$i];
+    if ($this->action == 'track' && !$this->device_id) {
+        if ((time() - $update_tm) < 24 * 60 * 60) {
+            $res_devices[] = $out['DEVICES'][$i];
         }
     } else {
-        $res_devices[]=$out['DEVICES'][$i];
+        $res_devices[] = $out['DEVICES'][$i];
     }
 
 }
-$out['DEVICES']=$res_devices;
+$out['DEVICES'] = $res_devices;
 
 if ($ajax) {
 
@@ -122,7 +122,7 @@ if ($ajax) {
         $points = array();
         for ($i = 0; $i < $total; $i++) {
             $coords[] = array($log[$i]['LAT'], $log[$i]['LON']);
-            $points[] = array('ID' => $log[$i]['ID'], 'LAT' => $log[$i]['LAT'], 'LON' => $log[$i]['LON'], 'TITLE' => $device['TITLE'] . ' (' . $log[$i]['ADDED'] . ')');
+            $points[] = array('ID' => $log[$i]['ID'], 'LAT' => $log[$i]['LAT'], 'LON' => $log[$i]['LON'], 'ALT' => $log[$i]['ALT'], 'SPEED' => $log[$i]['SPEED'], 'ACCURACY' => $log[$i]['ACCURACY'], 'PROVIDER' => $log[$i]['PROVIDER'], 'ADDED' => $log[$i]['ADDED'], 'TITLE' => $device['TITLE'] . ' (' . $log[$i]['ADDED'] . ')');
         }
         $res = array();
         if ($total) {
@@ -139,11 +139,25 @@ if ($ajax) {
         $res['LOCATIONS'] = SQLSelect("SELECT * FROM gpslocations");
         echo json_encode($res);
     }
-    
+
     if ($op == 'del_log') {
         global $id_log;
-        SQLExec("DELETE FROM gpslog WHERE ID=".$id_log);
+        SQLExec("DELETE FROM gpslog WHERE ID=" . $id_log);
         echo "Ok";
+    }
+
+    if ($op == 'edit_log') {
+        global $id;
+        global $lat;
+        global $lon;
+        $rec = SQLSelectOne("select * FROM gpslog WHERE ID=" . $id);
+        if (isset($rec["ID"])) {
+            $rec["LAT"] = $lat;
+            $rec["LON"] = $lon;
+            SQLUpdate("gpslog", $rec);
+            echo "Ok";
+        } else
+            echo "Not found";
     }
 
     exit;
