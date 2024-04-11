@@ -206,7 +206,7 @@ class app_gpstrack extends module
                 $this->redirect("?data_source=gpslog");
             }
             if ($this->view_mode == 'resolve_gpslog') {
-                $this->updateLogAddress($this->id, 25);
+                $this->updateLogAddress($this->id, 50);
                 $this->redirect("?data_source=gpslog&address="
                     . urlencode(gr('address'))
                     . "&page=" . urlencode(gr('page'))
@@ -487,7 +487,11 @@ class app_gpstrack extends module
     {
         $log = SQLSelectOne("SELECT * FROM gpslog WHERE ID=" . $id);
         if (!$log['ID']) return false;
-        $address = $this->getAddress($log['LAT'], $log['LON']);
+        if ($update_nearest_logs > 0) {
+            $address = $this->getAddress($log['LAT'], $log['LON'], false);
+        } else {
+            $address = $this->getAddress($log['LAT'], $log['LON']);
+        }
         if ($address != '') {
             $log['ADDRESS'] = $address;
             SQLUpdate('gpslog', $log);
@@ -495,7 +499,6 @@ class app_gpstrack extends module
                 $locations = SQLSelect("SELECT *, ST_Distance_Sphere( point ('" . $log['LON'] . "', '" . $log['LAT'] . "'), 
                               point(LON, LAT)) 
           as `distance` FROM `gpslog` WHERE ADDRESS='' HAVING `distance` <= '" . (int)$update_nearest_logs . "' ORDER BY `distance` ASC");
-
                 $total = count($locations);
                 for ($i = 0; $i < $total; $i++) {
                     unset($locations[$i]['distance']);
@@ -508,13 +511,15 @@ class app_gpstrack extends module
         return $address;
     }
 
-    function getAddress($lat, $lon)
+    function getAddress($lat, $lon, $use_cache = true)
     {
         // search for address received previously
-        $point = $this->getNearestLogPoint($lat, $lon, 50, "ADDRESS!=''");
-        if ($point['ID']) {
-            DebMes("Got address from cache (".$point['ADDRESS'].")",'gps');
-            return $point['ADDRESS'];
+        if ($use_cache) {
+            $point = $this->getNearestLogPoint($lat, $lon, 50, "ADDRESS!=''");
+            if ($point['ID']) {
+                //DebMes("Got address from cache (".$point['ADDRESS'].")",'gps');
+                return $point['ADDRESS'];
+            }
         }
 
         // try to get an address otherwise
