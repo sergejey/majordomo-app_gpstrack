@@ -142,14 +142,14 @@ if ($_REQUEST['latitude'] != '' && $_REQUEST['longitude'] != '' && $_REQUEST['la
 
     //$rec['ADDED']     = ($time) ? $time : date('Y-m-d H:i:s');
     $rec['ADDED'] = date('Y-m-d H:i:s');
-    $rec['LAT'] = $_REQUEST['latitude'];
-    $rec['LON'] = $_REQUEST['longitude'];
-    $rec['ALT'] = round($_REQUEST['altitude'], 2);
-    $rec['PROVIDER'] = $_REQUEST['provider'];
+    $rec['LAT'] = gr('latitude');
+    $rec['LON'] = gr('longitude');
+    $rec['ALT'] = round(gr('altitude'), 2);
+    $rec['PROVIDER'] = gr('provider');
     $rec['SPEED'] = round($_REQUEST['speed'], 2);
-    $rec['BATTLEVEL'] = $_REQUEST['battlevel'];
-    $rec['CHARGING'] = (int)$_REQUEST['charging'];
-    $rec['DEVICEID'] = $_REQUEST['deviceid'];
+    $rec['BATTLEVEL'] = gr('battlevel','int');
+    $rec['CHARGING'] = gr('charging','int');
+    $rec['DEVICEID'] = gr('deviceid');
     $rec['ACCURACY'] = isset($_REQUEST['accuracy']) ? $_REQUEST['accuracy'] : 0;
 
     if (($max_accuracy != 0) && ($rec['ACCURACY'] > $max_accuracy)) {
