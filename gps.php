@@ -25,26 +25,29 @@ $db = new mysql(DB_HOST, '', DB_USER, DB_PASSWORD, DB_NAME);
 
 include_once("./load_settings.php");
 
-if ($_REQUEST['location']) {
-    $tmp = explode(',', $_REQUEST['location']);
+$latitude = gr('latitude');
+$longitude = gr('longitude');
+$deviceid = gr('deviceid');
 
-    $_REQUEST['latitude'] = $tmp[0];
-    $_REQUEST['longitude'] = $tmp[1];
+$location = gr('location');
+if ($location!='') {
+    $tmp = explode(',', $location);
+    $latitude = $tmp[0];
+    $longitude = $tmp[1];
 }
 
-if ($_REQUEST['op'] != '') {
-    $op = $_REQUEST['op'];
+$op = gr('op');
+if ($op != '') {
     $ok = 0;
-
     if ($op == 'zones') {
         $zones = SQLSelect("SELECT * FROM gpslocations");
         echo json_encode(array('RESULT' => array('ZONES' => $zones, 'STATUS' => 'OK')));
         $ok = 1;
     }
 
-    if ($op == 'add_zone' && $_REQUEST['latitude'] && $_REQUEST['longitude'] && $_REQUEST['title']) {
-        global $title;
-        global $range;
+    $title = gr('title');
+    if ($op == 'add_zone' && $latitude!='' && $longitude!='' && $title) {
+        $range = gr('range','int');
 
         $sqlQuery = "SELECT *
                      FROM gpslocations
@@ -61,9 +64,9 @@ if ($_REQUEST['op'] != '') {
         $rec = array();
 
         $rec['TITLE'] = $title;
-        $rec['LAT'] = $_REQUEST['latitude'];
-        $rec['LON'] = $_REQUEST['longitude'];
-        $rec['RANGE'] = (int)$range;
+        $rec['LAT'] = $latitude;
+        $rec['LON'] = $longitude;
+        $rec['RANGE'] = $range;
         $rec['ID'] = SQLInsert('gpslocations', $rec);
 
         echo json_encode(array('RESULT' => array('STATUS' => 'OK')));
@@ -71,22 +74,23 @@ if ($_REQUEST['op'] != '') {
         $ok = 1;
     }
 
-    if ($op == 'set_token' && $_REQUEST['token'] && $_REQUEST['deviceid']) {
+    $token = gr('token');
+    if ($op == 'set_token' && $token && $deviceid) {
         $sqlQuery = "SELECT *
                      FROM gpsdevices
-                    WHERE DEVICEID = '" . DBSafe($_REQUEST['deviceid']) . "'";
+                    WHERE DEVICEID = '" . DBSafe($deviceid) . "'";
 
         $device = SQLSelectOne($sqlQuery);
 
         if (!$device['ID']) {
             $device = array();
 
-            $device['DEVICEID'] = $_REQUEST['deviceid'];
+            $device['DEVICEID'] = $deviceid;
             $device['TITLE'] = 'New GPS Device';
             $device['ID'] = SQLInsert('gpsdevices', $device);
         }
 
-        $device['TOKEN'] = $_REQUEST['token'];
+        $device['TOKEN'] = $token;
         SQLUpdate('gpsdevices', $device);
         $ok = 1;
     }
@@ -98,41 +102,36 @@ if ($_REQUEST['op'] != '') {
     exit;
 }
 
-if ($_REQUEST['latitude'] != '' && $_REQUEST['longitude'] != '' && $_REQUEST['latitude'] != '0' && $_REQUEST['longitude'] != '0') {
+if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0') {
 
     include_once("./modules/app_gpstrack/app_gpstrack.class.php");
     $gpstrack = new app_gpstrack();
     $gpstrack->getConfig();
     $max_accuracy = $gpstrack->config['MAX_ACCURACY'];
 
-    //DebMes("GPS DATA RECEIVED: \n".serialize($_REQUEST));
-    if ($_REQUEST['deviceid']) {
+    if ($deviceid) {
         $sqlQuery = "SELECT *
                      FROM gpsdevices
-                    WHERE DEVICEID = '" . DBSafe($_REQUEST['deviceid']) . "'";
+                    WHERE DEVICEID = '" . DBSafe($deviceid) . "'";
 
         $device = SQLSelectOne($sqlQuery);
 
         if (!$device['ID']) {
             $device = array();
-
-            $device['DEVICEID'] = $_REQUEST['deviceid'];
+            $device['DEVICEID'] = $deviceid;
             $device['TITLE'] = 'New GPS Device';
-
-            if ($_REQUEST['token'])
-                $device['TOKEN'] = $_REQUEST['token'];
-
+            $device['TOKEN'] = gr('token');
             $device['ID'] = SQLInsert('gpsdevices', $device);
 
             $sqlQuery = "UPDATE gpslog
                          SET DEVICE_ID = '" . $device['ID'] . "'
-                       WHERE DEVICEID = '" . DBSafe($_REQUEST['deviceid']) . "'";
+                       WHERE DEVICEID = '" . DBSafe(gr('deviceid')) . "'";
 
             SQLExec($sqlQuery);
         }
 
-        $device['LAT'] = $_REQUEST['latitude'];
-        $device['LON'] = $_REQUEST['longitude'];
+        $device['LAT'] = (float)$latitude;
+        $device['LON'] = (float)$longitude;
         $device['UPDATED'] = date('Y-m-d H:i:s');
 
         SQLUpdate('gpsdevices', $device);
@@ -146,11 +145,11 @@ if ($_REQUEST['latitude'] != '' && $_REQUEST['longitude'] != '' && $_REQUEST['la
     $rec['LON'] = gr('longitude');
     $rec['ALT'] = round(gr('altitude'), 2);
     $rec['PROVIDER'] = gr('provider');
-    $rec['SPEED'] = round($_REQUEST['speed'], 2);
-    $rec['BATTLEVEL'] = gr('battlevel','int');
-    $rec['CHARGING'] = gr('charging','int');
+    $rec['SPEED'] = round(gr('speed'), 2);
+    $rec['BATTLEVEL'] = gr('battlevel', 'int');
+    $rec['CHARGING'] = gr('charging', 'int');
     $rec['DEVICEID'] = gr('deviceid');
-    $rec['ACCURACY'] = isset($_REQUEST['accuracy']) ? $_REQUEST['accuracy'] : 0;
+    $rec['ACCURACY'] = gr('accuracy', 'int');
 
     if (($max_accuracy != 0) && ($rec['ACCURACY'] > $max_accuracy)) {
         DebMes("GPS Accuracy {$rec['ACCURACY']} > {$max_accuracy} exiting!", 'gps');
@@ -206,8 +205,8 @@ if ($_REQUEST['latitude'] != '' && $_REQUEST['longitude'] != '' && $_REQUEST['la
     }
 
     // checking locations
-    $lat = (float)$_REQUEST['latitude'];
-    $lon = (float)$_REQUEST['longitude'];
+    $lat = gr('latitude', 'float');;
+    $lon = gr('longitude', 'float');
 
     $locations = SQLSelect("SELECT * FROM gpslocations");
     $total = count($locations);
@@ -340,10 +339,9 @@ if ($_REQUEST['latitude'] != '' && $_REQUEST['longitude'] != '' && $_REQUEST['la
         }
     }
 }
+
 if ($user['LINKED_OBJECT'] && !$location_found) {
-    if (isset($_REQUEST['address'])) {
-        $address = $_REQUEST['address'];
-    }
+    $address = gr('address');
     if ($address)
         setGlobal($user['LINKED_OBJECT'] . '.seenAt', $address);
     else
