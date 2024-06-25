@@ -26,7 +26,7 @@ if ($this->owner->name == 'panel') {
 }
 $qry = "1";
 // search filters
-if (IsSet($this->device_id)) {
+if (isset($this->device_id)) {
     $device_id = $this->device_id;
 } else {
     global $device_id;
@@ -37,7 +37,7 @@ if ($device_id) {
     $out['SEARCHING']=1;
 }
 
-if (IsSet($this->location_id)) {
+if (isset($this->location_id)) {
     $location_id = $this->location_id;
 } else {
     global $location_id;
@@ -75,7 +75,7 @@ if ($date_from) {
 }
 
 // QUERY READY
-global $save_qry;
+$save_qry = gr('save_qry');
 if ($save_qry) {
     $qry = $session->data['gpslog_qry'];
 } else {
@@ -83,9 +83,9 @@ if ($save_qry) {
 }
 if (!$qry) $qry = "1";
 // FIELDS ORDER
-global $sortby_gpslog;
+$sortby_gpslog = gr('sortby_gpslog');
 if (!$sortby_gpslog) {
-    $sortby_gpslog = $session->data['gpslog_sort'];
+    $sortby_gpslog = isset($session->data['gpslog_sort']) ? $session->data['gpslog_sort'] : '';
 } else {
     if ($session->data['gpslog_sort'] == $sortby_gpslog) {
         if (Is_Integer(strpos($sortby_gpslog, ' DESC'))) {

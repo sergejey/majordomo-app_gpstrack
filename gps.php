@@ -170,7 +170,6 @@ if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0'
                        LIMIT 1";
 
     $previous_log_record = SQLSelectOne($sqlQuery);
-
     if ($device['USER_ID']) {
         $sqlQuery = "SELECT *
                      FROM users
@@ -178,7 +177,7 @@ if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0'
 
         $user = SQLSelectOne($sqlQuery);
 
-        if ($user['LINKED_OBJECT']) {
+        if (isset($user['LINKED_OBJECT'])) {
             setGlobal($user['LINKED_OBJECT'] . '.Coordinates', $rec['LAT'] . ',' . $rec['LON']);
             setGlobal($user['LINKED_OBJECT'] . '.CoordinatesUpdated', date('H:i'));
             setGlobal($user['LINKED_OBJECT'] . '.CoordinatesUpdatedTimestamp', time());
@@ -222,7 +221,7 @@ if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0'
         if ($locations[$i]['IS_HOME'] && $device['ID']) {
             $device['HOME_DISTANCE'] = (int)$distance;
             SQLUpdate('gpsdevices', $device);
-            if ($user['LINKED_OBJECT']) {
+            if (isset($user['LINKED_OBJECT'])) {
                 setGlobal($user['LINKED_OBJECT'] . '.HomeDistance', $device['HOME_DISTANCE']);
                 setGlobal($user['LINKED_OBJECT'] . '.HomeDistanceKm', round($device['HOME_DISTANCE'] / 1000, 1));
             }
@@ -232,7 +231,7 @@ if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0'
 
         $params = array();
         $params['LOCATION'] = $locations[$i]['TITLE'];
-        $params['USER_OBJECT'] = $user['LINKED_OBJECT'];
+        $params['USER_OBJECT'] = isset($user['LINKED_OBJECT']) ? $user['LINKED_OBJECT']:'';
 
         if ($distance <= $locations[$i]['RANGE']) {
 
@@ -243,7 +242,7 @@ if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0'
             //Debmes("Device (" . $device['TITLE'] . ") NEAR location " . $locations[$i]['TITLE']." (".json_encode($rec).")",'gps');
             $location_found = 1;
 
-            if ($user['LINKED_OBJECT'])
+            if (isset($user['LINKED_OBJECT']))
                 setGlobal($user['LINKED_OBJECT'] . '.seenAt', $locations[$i]['TITLE']);
 
 
@@ -267,9 +266,12 @@ if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0'
 
                 $gpsaction = SQLSelectOne($sqlQuery);
 
-                if ($gpsaction['ID']) {
+                if (isset($gpsaction['ID'])) {
                     $gpsaction['EXECUTED'] = date('Y-m-d H:i:s');
                     $gpsaction['LOG'] = $gpsaction['EXECUTED'] . " Executed\n" . $gpsaction['LOG'];
+					while(substr_count($gpsaction['LOG'], "\n") > 30){ //очищаем самые давние события, если их более 30
+						$gpsaction['LOG'] = substr($gpsaction['LOG'], 0, strrpos(trim($gpsaction['LOG']), "\n"));
+					}
 
                     SQLUpdate('gpsactions', $gpsaction);
 
@@ -315,9 +317,12 @@ if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0'
 
                 $gpsaction = SQLSelectOne($sqlQuery);
 
-                if ($gpsaction['ID']) {
+                if (isset($gpsaction['ID'])) {
                     $gpsaction['EXECUTED'] = date('Y-m-d H:i:s');
                     $gpsaction['LOG'] = $gpsaction['EXECUTED'] . " Executed\n" . $gpsaction['LOG'];
+					while(substr_count($gpsaction['LOG'], "\n") > 30){ //очищаем самые давние события, если их более 30
+						$gpsaction['LOG'] = substr($gpsaction['LOG'], 0, strrpos(trim($gpsaction['LOG']), "\n"));
+					}
 
                     SQLUpdate('gpsactions', $gpsaction);
 
@@ -340,7 +345,7 @@ if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0'
     }
 }
 
-if ($user['LINKED_OBJECT'] && !$location_found) {
+if (isset($user['LINKED_OBJECT']) && !$location_found) {
     $address = gr('address');
     if ($address)
         setGlobal($user['LINKED_OBJECT'] . '.seenAt', $address);
