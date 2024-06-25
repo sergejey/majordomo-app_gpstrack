@@ -182,7 +182,7 @@ class app_gpstrack extends module
             }
             $this->redirect("?data_source=gpsoptions&ok=1");
         }
-        if ($_GET['ok']) {
+        if (isset($_GET['ok'])) {
             $out['OK'] = 1;
         }
 
@@ -516,7 +516,7 @@ class app_gpstrack extends module
         // search for address received previously
         if ($use_cache) {
             $point = $this->getNearestLogPoint($lat, $lon, 50, "ADDRESS!=''");
-            if ($point['ID']) {
+            if (isset($point['ID'])) {
                 //DebMes("Got address from cache (".$point['ADDRESS'].")",'gps');
                 return $point['ADDRESS'];
             }
@@ -575,7 +575,7 @@ class app_gpstrack extends module
      */
     function calculateTheDistance($latA, $lonA, $latB, $lonB)
     {
-        define('EARTH_RADIUS', 6372795);
+		if (!defined('EARTH_RADIUS')) define('EARTH_RADIUS', 6372795);
 
         $lat1 = $latA * M_PI / 180;
         $lat2 = $latB * M_PI / 180;
