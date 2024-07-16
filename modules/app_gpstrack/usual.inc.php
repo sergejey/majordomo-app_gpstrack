@@ -4,7 +4,6 @@ global $ajax;
 if ($this->ajax) {
     $ajax = 1;
 }
-
 global $op;
 global $period;
 global $to;
@@ -27,8 +26,8 @@ if ($period == 'week') {
     $to = date('Y-m-d');
     $from = date('Y-m-d', time() - 31 * 24 * 60 * 60);
 } elseif ($period == 'custom') {
-    $qry .= " AND ADDED>=DATE('" . $from . " 00:00:00')";
-    $qry .= " AND ADDED<=DATE('" . $to . " 23:59:59')";
+    $qry .= " AND ADDED>='" . $from . " 00:00:00'";
+    $qry .= " AND ADDED<='" . $to . " 23:59:59'";
 } elseif ($period == 'day') {
     $qry .= " AND ADDED>'" . date('Y-m-d H:i:s', time() - 1 * 24 * 60 * 60) . "'";
     $to = date('Y-m-d');
@@ -39,7 +38,6 @@ if ($period == 'week') {
     $to = date('Y-m-d');
     $from = $to;
 }
-
 $device_id = gr('device_id', 'int');
 
 if ($this->action == 'track') {
@@ -86,7 +84,6 @@ for ($i = 0; $i < $total; $i++) {
 
 }
 $out['DEVICES'] = $res_devices;
-
 if ($ajax) {
 
     if (!headers_sent()) {
