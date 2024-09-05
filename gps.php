@@ -30,7 +30,7 @@ $longitude = gr('longitude');
 $deviceid = gr('deviceid');
 
 $location = gr('location');
-if ($location!='') {
+if ($location != '') {
     $tmp = explode(',', $location);
     $latitude = $tmp[0];
     $longitude = $tmp[1];
@@ -46,8 +46,8 @@ if ($op != '') {
     }
 
     $title = gr('title');
-    if ($op == 'add_zone' && $latitude!='' && $longitude!='' && $title) {
-        $range = gr('range','int');
+    if ($op == 'add_zone' && $latitude != '' && $longitude != '' && $title) {
+        $range = gr('range', 'int');
 
         $sqlQuery = "SELECT *
                      FROM gpslocations
@@ -143,9 +143,9 @@ if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0'
     $rec['ADDED'] = date('Y-m-d H:i:s');
     $rec['LAT'] = gr('latitude');
     $rec['LON'] = gr('longitude');
-    $rec['ALT'] = round(gr('altitude'), 2);
+    $rec['ALT'] = round(gr('altitude', 'float'), 2);
     $rec['PROVIDER'] = gr('provider');
-    $rec['SPEED'] = round(gr('speed'), 2);
+    $rec['SPEED'] = round(gr('speed', 'float'), 2);
     $rec['BATTLEVEL'] = gr('battlevel', 'int');
     $rec['CHARGING'] = gr('charging', 'int');
     $rec['DEVICEID'] = gr('deviceid');
@@ -231,7 +231,7 @@ if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0'
 
         $params = array();
         $params['LOCATION'] = $locations[$i]['TITLE'];
-        $params['USER_OBJECT'] = isset($user['LINKED_OBJECT']) ? $user['LINKED_OBJECT']:'';
+        $params['USER_OBJECT'] = isset($user['LINKED_OBJECT']) ? $user['LINKED_OBJECT'] : '';
 
         if ($distance <= $locations[$i]['RANGE']) {
 
@@ -269,9 +269,9 @@ if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0'
                 if (isset($gpsaction['ID'])) {
                     $gpsaction['EXECUTED'] = date('Y-m-d H:i:s');
                     $gpsaction['LOG'] = $gpsaction['EXECUTED'] . " Executed\n" . $gpsaction['LOG'];
-					while(substr_count($gpsaction['LOG'], "\n") > 30){ //очищаем самые давние события, если их более 30
-						$gpsaction['LOG'] = substr($gpsaction['LOG'], 0, strrpos(trim($gpsaction['LOG']), "\n"));
-					}
+                    while (substr_count($gpsaction['LOG'], "\n") > 30) { //очищаем самые давние события, если их более 30
+                        $gpsaction['LOG'] = substr($gpsaction['LOG'], 0, strrpos(trim($gpsaction['LOG']), "\n"));
+                    }
 
                     SQLUpdate('gpsactions', $gpsaction);
 
@@ -320,9 +320,9 @@ if ($latitude != '' && $longitude != '' && $latitude != '0' && $longitude != '0'
                 if (isset($gpsaction['ID'])) {
                     $gpsaction['EXECUTED'] = date('Y-m-d H:i:s');
                     $gpsaction['LOG'] = $gpsaction['EXECUTED'] . " Executed\n" . $gpsaction['LOG'];
-					while(substr_count($gpsaction['LOG'], "\n") > 30){ //очищаем самые давние события, если их более 30
-						$gpsaction['LOG'] = substr($gpsaction['LOG'], 0, strrpos(trim($gpsaction['LOG']), "\n"));
-					}
+                    while (substr_count($gpsaction['LOG'], "\n") > 30) { //очищаем самые давние события, если их более 30
+                        $gpsaction['LOG'] = substr($gpsaction['LOG'], 0, strrpos(trim($gpsaction['LOG']), "\n"));
+                    }
 
                     SQLUpdate('gpsactions', $gpsaction);
 
