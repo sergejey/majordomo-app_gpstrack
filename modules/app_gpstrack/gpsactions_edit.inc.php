@@ -31,6 +31,8 @@ if ($this->mode == 'update') {
     }
     //updating 'CODE' (text)
     $rec['CODE'] = gr('code');
+    $rec['SAY_LEVEL'] = gr('say_level','int');
+    $rec['SAY_TEXT'] = gr('say_text');
     //UPDATING RECORD
     if ($ok) {
         if ($rec['ID']) {

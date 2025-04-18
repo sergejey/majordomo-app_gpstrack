@@ -17,28 +17,46 @@ $colors = array('#BF616A', '#D08770', '#EBCB8B', '#A3BE8C', '#B48EAD', 'red', 'b
 
 $qry = 1;
 
+$toTM = 0;
 if ($period == 'week') {
     $qry .= " AND ADDED>='" . date('Y-m-d H:i:s', time() - 7 * 24 * 60 * 60) . "'";
+    $fromTM = time() - 7 * 24 * 60 * 60;
     $to = date('Y-m-d');
-    $from = date('Y-m-d', time() - 7 * 24 * 60 * 60);
+    $from = date('Y-m-d', $fromTM);
 } elseif ($period == 'month') {
     $qry .= " AND ADDED>='" . date('Y-m-d H:i:s', time() - 31 * 24 * 60 * 60) . "'";
     $to = date('Y-m-d');
-    $from = date('Y-m-d', time() - 31 * 24 * 60 * 60);
+    $fromTM = time() - 31 * 24 * 60 * 60;
+    $from = date('Y-m-d', $fromTM);
 } elseif ($period == 'custom') {
+    $fromTM = strtotime($from . ' 00:00:00');
     $qry .= " AND ADDED>='" . $from . " 00:00:00'";
+    $toTM = strtotime($to . ' 23:59:59');
     $qry .= " AND ADDED<='" . $to . " 23:59:59'";
 } elseif ($period == 'day') {
     $qry .= " AND ADDED>'" . date('Y-m-d H:i:s', time() - 1 * 24 * 60 * 60) . "'";
     $to = date('Y-m-d');
-    $from = date('Y-m-d', time() - 1 * 24 * 60 * 60);
+    $fromTM = time() - 1 * 24 * 60 * 60;
+    $from = date('Y-m-d', $fromTM);
 } else {
     $period = 'today';
+    $fromTM = strtotime(date('Y-m-d') . ' 00:00:00');
     $qry .= " AND ADDED>='" . date('Y-m-d 00:00:00') . "'";
     $to = date('Y-m-d');
     $from = $to;
 }
 $device_id = gr('device_id', 'int');
+
+$out['FROM_TM'] = $fromTM;
+$out['TO_TM'] = $toTM;
+
+$slider_value = gr('slider_value', 'int');
+if ($slider_value > 0 && $slider_value < 100) {
+    if ($toTM == 0) $toTM = time();
+    $diff = round(($toTM - $fromTM) * $slider_value / 100);
+    $endTM = $fromTM + $diff;
+    $qry .= " AND ADDED<='" . date('Y-m-d H:i:s', $endTM) . "'";
+}
 
 if ($this->action == 'track') {
     $device_id = $this->device_id;
@@ -46,10 +64,9 @@ if ($this->action == 'track') {
     if (!$out['WIDTH']) $out['WIDTH'] = '300px';
     $out['HEIGHT'] = $this->height;
     if (!$out['HEIGHT']) $out['HEIGHT'] = '300px';
-    $out['UNIQ'] = uniqid();
-} else {
-    $out['UNIQ'] = '';
 }
+
+$out['UNIQ'] = uniqid();
 
 if ($device_id) {
     $out['DEVICE_ID'] = $device_id;
@@ -91,11 +108,20 @@ if ($ajax) {
         header('Content-Type: text/html; charset=utf-8');
     }
 
+    if ($op == 'getcard') {
+        $res = $this->card($out);
+        echo json_encode($res);
+    }
+
     if ($op == 'getmarkers') {
 
         $total = count($out['DEVICES']);
         for ($i = 0; $i < $total; $i++) {
-            $latest_point = SQLSelectOne("SELECT LAT,LON FROM gpslog WHERE DEVICE_ID='" . $out['DEVICES'][$i]['ID'] . "' ORDER BY ID DESC LIMIT 1");
+            $latest_point = SQLSelectOne("SELECT ID, LAT, LON, ADDED FROM gpslog WHERE DEVICE_ID='" . $out['DEVICES'][$i]['ID'] . "' AND $qry ORDER BY ID DESC LIMIT 1");
+            if (isset($latest_point['ID'])) {
+                $out['DEVICES'][$i]['LAT'] = $latest_point['LAT'];
+                $out['DEVICES'][$i]['LON'] = $latest_point['LON'];
+            }
             $out['DEVICES'][$i]['LATEST_LAT'] = $latest_point['LAT'];
             $out['DEVICES'][$i]['LATEST_LON'] = $latest_point['LON'];
         }
@@ -119,7 +145,13 @@ if ($ajax) {
         $points = array();
         for ($i = 0; $i < $total; $i++) {
             $coords[] = array($log[$i]['LAT'], $log[$i]['LON']);
-            $points[] = array('ID' => $log[$i]['ID'], 'LAT' => $log[$i]['LAT'], 'LON' => $log[$i]['LON'], 'ALT' => $log[$i]['ALT'], 'SPEED' => $log[$i]['SPEED'], 'ACCURACY' => $log[$i]['ACCURACY'], 'PROVIDER' => $log[$i]['PROVIDER'], 'ADDED' => $log[$i]['ADDED'], 'TITLE' => $device['TITLE'] . ' (' . $log[$i]['ADDED'] . ')');
+            $points[] = array('ID' => $log[$i]['ID'], 'LAT' => $log[$i]['LAT'], 'LON' => $log[$i]['LON'], 'ALT' => $log[$i]['ALT'], 'SPEED' => $log[$i]['SPEED'], 'BATTLEVEL' => $log[$i]['BATTLEVEL'], 'ACCURACY' => $log[$i]['ACCURACY'], 'PROVIDER' => $log[$i]['PROVIDER'], 'ADDED' => $log[$i]['ADDED'], 'TITLE' => $device['TITLE'] . ' (' . $log[$i]['ADDED'] . ')');
+            if ($i > 0) {
+                $prev_lon = $log[$i - 1]['LON'];
+                $prev_lat = $log[$i - 1]['LAT'];
+                $angle = $this->getBearing($prev_lat, $prev_lon, $log[$i]['LAT'], $log[$i]['LON']);
+                $points[$i - 1]['ANGLE'] = $angle;
+            }
         }
         $res = array();
         if ($total) {

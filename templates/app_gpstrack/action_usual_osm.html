@@ -1,3 +1,4 @@
+[#inc action_usual_scripts.html#]
 <script src="http://openlayers.org/api/OpenLayers.js"></script>
 <script src="http://mapstraction.com/mxn/build/latest/mxn.js?(openlayers)" type="text/javascript"></script>
 
@@ -5,112 +6,70 @@
 
         var updateTimeOut<#UNIQ#>;
 
-        function checkMarkerExists<#UNIQ#>(temp_id) {
-            for (var i=0, marker; marker=map<#UNIQ#>.markers[i]; i++){
-                if (marker.temp_id==temp_id) return true;
-            }
-            return false;
-        }
-
-        function getMarkerIndex<#UNIQ#>(temp_id) {
-            for (var i=0, marker; marker=map<#UNIQ#>.markers[i]; i++){
-                if (marker.temp_id==temp_id) return i;
-            }
-            return false;
-        }
-
         function updateLocations<#UNIQ#>() {
-            var url='<#ROOTHTML#>ajax/app_gpstrack.html?ajax=1&op=getlocations';
-
-            $.ajax({
-                url: url
-            }).done(function(data) {
-                var obj=jQuery.parseJSON(data);
-                if (obj.LOCATIONS.length>0) {
-                    var locations=obj.LOCATIONS;
-                    var locationsLength = locations.length;
-
-                    for(var i = 0; i < locationsLength; i++)
-                    {
-                        var location = locations[i];
-                        var center = new mxn.LatLonPoint(parseFloat(location.LAT),parseFloat(location.LON));
-                        var rad = new mxn.Radius(center, 10);
-                        var poly = rad.getPolyline(Math.round(parseFloat(location.RANGE)/1000), '#F00014');
-                        map<#UNIQ#>.addPolyline(poly);
-
-                    }
+            loadLocations(function () {
+                let locationsLength = locations.length;
+                for(let i = 0; i < locationsLength; i++)
+                {
+                    let location = locations[i];
+                    let center = new mxn.LatLonPoint(parseFloat(location.LAT),parseFloat(location.LON));
+                    let rad = new mxn.Radius(center, 10);
+                    let poly = rad.getPolyline(Math.round(parseFloat(location.RANGE)/1000), '#F00014');
+                    map<#UNIQ#>.addPolyline(poly);
+                    map<#UNIQ#>.polylines.push(poly);
                 }
             });
-
-
             return false;
         }
 
         function updateRoute<#UNIQ#>(device_id, color) {
-            var url='<#ROOTHTML#>ajax/app_gpstrack.html?op=getroute&period=[#PERIOD#]&from=[#FROM#]&to=[#TO#]&device_id='+device_id;
-
-            $.ajax({
-                url: url
-            }).done(function(data) {
-                var obj=jQuery.parseJSON(data);
-                if ((typeof obj.PATH!=='undefined') && (obj.PATH.length>0)) {
-
-                    var path=obj.PATH;
-                    var polyPoint;
-                    var polyPoints = [];
-
+            loadRoute(device_id, function (path) {
+                if (path.length>0) {
+                    let polyPoints = [];
                     path.forEach(function (item, i, arr) {
-                        polyPoint = new mxn.LatLonPoint(parseFloat(path[i][0]) , parseFloat(path[i][1]));
+                        let polyPoint = new mxn.LatLonPoint(parseFloat(path[i].LAT) , parseFloat(path[i].LON));
                         polyPoints.push(polyPoint);
-                        //var myLatLng = {lat: parseFloat(path[i][0]), lng: parseFloat(path[i][1])};
-                        //pathCoordinates.push(myLatLng);
-                    } );
+                    });
 
-                    var polygon = new mxn.Polyline(polyPoints);
+                    let polygon = new mxn.Polyline(polyPoints);
                     polygon.setClosed(false);
                     polygon.setColor(color);
                     polygon.setWidth(3);
                     map<#UNIQ#>.addPolyline(polygon);
-
+                    map<#UNIQ#>.polylines.push(polygon);
                 }
             });
             return false;
         }
 
         function updateMarkers<#UNIQ#>() {
-            var url='<#ROOTHTML#>ajax/app_gpstrack.html?op=getmarkers&device_id=<#DEVICE_ID#>&action=<#ACTION#>';
-            $.ajax({
-                url: url
-            }).done(function(data) {
-                var obj=jQuery.parseJSON(data);
-                var markers=obj.MARKERS;
+            loadMarkers(function () {
                 var markersCnt = markers.length;
-
                 for(var i=0;i<markersCnt;i++) {
                     var marker=markers[i];
                     var temp_id=marker.ID;
-
-                    if (checkMarkerExists<#UNIQ#>(temp_id)) {
-                        var mk=getMarkerIndex<#UNIQ#>(temp_id);
+                    if (checkMarkerExists(temp_id)) {
+                        var mk=getMarkerIndex(temp_id);
                         map<#UNIQ#>.removeMarker(map<#UNIQ#>.markers[mk]);
                         map<#UNIQ#>.markers.splice(mk,1);
                     }
-                        var mapMarker = new mxn.Marker( new mxn.LatLonPoint(marker.LAT, marker.LON));
-                        mapMarker.temp_id = temp_id;
-                        mapMarker.setIcon('<#ROOTHTML#>modules/app_gpstrack/marker.php?color='+encodeURIComponent(marker.COLOR));
-                        mapMarker.setLabel(marker.NAME);
-                        mapMarker.setInfoBubble(marker.HTML);
-                        map<#UNIQ#>.addMarker(mapMarker);
-                        map<#UNIQ#>.markers.push(mapMarker);
+                    var mapMarker = new mxn.Marker( new mxn.LatLonPoint(marker.LAT, marker.LON));
+                    mapMarker.temp_id = temp_id;
+                    mapMarker.setIcon('<#ROOTHTML#>modules/app_gpstrack/marker.php?color='+encodeURIComponent(marker.COLOR));
+                    mapMarker.setLabel(marker.NAME);
+                    mapMarker.setInfoBubble(marker.HTML);
+                    map<#UNIQ#>.addMarker(mapMarker);
+                    map<#UNIQ#>.markers.push(mapMarker);
                 }
-                [#if ACTION="track"#]
-                updateTimeOut<#UNIQ#>=setTimeout('updateMarkers<#UNIQ#>();', 5*1000);
-                map<#UNIQ#>.autoCenterAndZoom();
-                [#else#]
-                updateTimeOut<#UNIQ#>=setTimeout('updateMarkers<#UNIQ#>();', 30*1000);
-                [#endif#]
-
             });
+
+            clearTimeout(updateTimeOut<#UNIQ#>);
+            [#if ACTION="track"#]
+            updateTimeOut<#UNIQ#>=setTimeout('updateMarkers<#UNIQ#>();', 5*1000);
+            map<#UNIQ#>.autoCenterAndZoom();
+            [#else#]
+            updateTimeOut<#UNIQ#>=setTimeout('updateMarkers<#UNIQ#>();', 30*1000);
+            [#endif#]
             return false;
         }
 
@@ -138,35 +97,35 @@
             map<#UNIQ#>.markers = new Array();
             map<#UNIQ#>.polylines = new Array();
 
-            updateMarkers<#UNIQ#>();
-
-            [#if ACTION!="track"#]
-
-            [#if DEVICE_ID!=""#]
-            [#begin DEVICES#]
-            [#if ID="<#DEVICE_ID#>"#]
-            updateRoute<#UNIQ#>([#ID#], '[#COLOR#]');
-            [#endif ID#]
-            [#end DEVICES#]
-            [#else DEVICE_ID#]
-            [#begin DEVICES#]
-            updateRoute<#UNIQ#>([#ID#], '[#COLOR#]');
-            [#end DEVICES#]
-            [#endif DEVICE_ID#]
-            updateLocations<#UNIQ#>();
-
-            setTimeout('map<#UNIQ#>.autoCenterAndZoom();',10*1000);
-
-            [#else ACTION#]
-
-            //setTimeout('zoomToDevice(<#DEVICE_ID#>);',5*1000);
-
-
-            [#endif ACTION#]
-
+            reloadData();
+            resizeMap();
 
 
         });
+
+
+        function reloadData() {
+
+            markers = [];
+            for(var i=0; i < map<#UNIQ#>.markers.length; i++){
+                map<#UNIQ#>.removeMarker(map<#UNIQ#>.markers[i]);
+            }
+            map<#UNIQ#>.markers = new Array();
+            updateMarkers<#UNIQ#>();
+
+            for(var i=0; i < map<#UNIQ#>.polylines.length; i++){
+                map<#UNIQ#>.removePolyline(map<#UNIQ#>.polylines[i]);
+            }
+            map<#UNIQ#>.polylines = new Array();
+
+            [#begin DEVICES#]
+            [#if ID="<#DEVICE_ID#>" || "<#DEVICE_ID#>"==""#]
+            updateRoute<#UNIQ#>([#ID#], '[#COLOR#]');
+            [#endif#]
+            [#end DEVICES#]
+            updateLocations<#UNIQ#>()
+
+        }
 
 
         function zoomToDevice<#UNIQ#>(id) {
@@ -180,17 +139,6 @@
             }
         }
 
-        function legendClicked<#UNIQ#>(id, color) {
-            for (var i=0; i<map<#UNIQ#>.markers.length; i++){
-                //marker.setMap(null);
-                if (map<#UNIQ#>.markers[i].temp_id==id) {
-                    //map.removeMarker(map.markers[i]);
-                }
-            }
-
-            return false;
-        }
-
         function resetMapZoom<#UNIQ#>() {
             map<#UNIQ#>.autoCenterAndZoom();
             return false;
@@ -198,10 +146,4 @@
 
     </script>
 
-[#if ACTION!="track"#]
-[#inc action_usual_controls.html#]
-<div id="map<#UNIQ#>" style="width: 100%; height: 620px;"></div>
-[#else#]
-
-<div id="map<#UNIQ#>" style="width: [#WIDTH#]; height: [#HEIGHT#];"></div>
-[#endif#]
+[#inc action_usual_common.html#]

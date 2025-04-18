@@ -1,0 +1,17 @@
+<h3><#LANG_USER#></h3>
+[#begin USERS#]
+<div>
+    <h5><#USERS.NAME#></h5>
+    [#module name="app_gpstrack" user_id="<#USERS.ID#>" action="card" instance="card"#]
+    <pre>&#091#module name="app_gpstrack" user_id="<#USERS.ID#>" action="card"#&#093</pre>
+</div>
+[#end USERS#]
+<hr size="1">
+<h3><#LANG_DEVICE#></h3>
+[#begin DEVICES#]
+<div>
+    <h5><#DEVICES.TITLE#></h5>
+    [#module name="app_gpstrack" device_id="<#DEVICES.ID#>" action="card" instance="card"#]
+    <pre>&#091#module name="app_gpstrack" device_id="<#DEVICES.ID#>" action="card"#&#093</pre>
+</div>
+[#end DEVICES#]

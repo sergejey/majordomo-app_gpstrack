@@ -1,66 +1,34 @@
+[#inc action_usual_scripts.html#]
 <script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=true[#if "<#API_KEY#>"!=""#]&key=<#API_KEY#>[#endif#]"></script>
 <!--<script type="text/javascript" src="<#ROOTHTML#>js/gmaps.js"></script>-->
 
 <script type="text/javascript" language="javascript">
 
 var updateTimeOut;
-
-function resizeMap() {
- $('#map').css({'height':(($(document).height())-40)+'px', 'width':'100%'});
- return false;
-}
-
-function checkMarkerExists(temp_id) {
-  for (var i=0, marker; marker=map.markers[i]; i++){
-   if (marker.temp_id==temp_id) return true;
-  }
-  return false;
-}
-
-function getMarkerIndex(temp_id) {
-  for (var i=0, marker; marker=map.markers[i]; i++){
-   if (marker.temp_id==temp_id) return i;
-  }
- return false;
-}
-
 function updateLocations() {
- var url="?";
- url+='&ajax=1&op=getlocations';
-
- $.ajax({
-   url: url
-  }).done(function(data) { 
-   var obj=jQuery.parseJSON(data);
-   if (obj.LOCATIONS.length>0) {
-      var locations=obj.LOCATIONS;
-      var locationsLength = locations.length;
-
-      for(var i = 0; i < locationsLength; i++)
-      {
-         var location = locations[i];
-         var temp_id  = location.ID;
-		 var myLatLng = {lat: parseFloat(location.LAT), lng: parseFloat(location.LON)};
-		 var myCircle = new google.maps.Circle({
-			temp_id: temp_id,
-			center: myLatLng,
-			radius: parseFloat(location.RANGE),
-			map: map,
-			title: location.TITLE,
-			strokeColor: '#0000FF',
-			strokeOpacity: 0.8,
-			strokeWeight: 2,
-			fillColor: '#0000FF',
-			fillOpacity: 0.35,
-		 });	 
-      }
-   }
-  });
-
-
-return false;
+    loadLocations(function () {
+        let locationsLength = locations.length;
+        for(let i = 0; i < locationsLength; i++)
+        {
+            let location = locations[i];
+            let temp_id  = location.ID;
+            let myLatLng = {lat: parseFloat(location.LAT), lng: parseFloat(location.LON)};
+            let myCircle = new google.maps.Circle({
+                temp_id: temp_id,
+                center: myLatLng,
+                radius: parseFloat(location.RANGE),
+                map: map,
+                title: location.TITLE,
+                strokeColor: '#0000FF',
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: '#0000FF',
+                fillOpacity: 0.35,
+            });
+        }
+    });
+    return false;
 }
-
 function zoomToObject(obj){
     var bounds = new google.maps.LatLngBounds();
     var points = obj.getPath().getArray();
@@ -69,41 +37,47 @@ function zoomToObject(obj){
     }
     map.fitBounds(bounds);
 }
-
 function updateRoute(device_id, color) {
- var url="?";
- url+='&ajax=1&op=getroute&period=[#PERIOD#]&from=[#FROM#]&to=[#TO#]&device_id='+device_id;
+    loadRoute(device_id, function (path) {
+        if (path.length>0) {
+            var pathCoordinates = new Array();
+            path.forEach(function (item, i, arr) {
+                let myLatLng = {lat: parseFloat(path[i].LAT), lng: parseFloat(path[i].LON)};
+                pathCoordinates.push(myLatLng);
 
- $.ajax({
-   url: url
-  }).done(function(data) { 
-   var obj=jQuery.parseJSON(data);
-   if (obj.PATH.length>0) {
+                let pathMarkerImg = {
+                    url: '<#ROOTHTML#>modules/app_gpstrack/marker.php?color='+encodeURIComponent(color)+'&direction='+encodeURIComponent(path[i].ANGLE),
+                    size: new google.maps.Size(12, 12),
+                    scaledSize: new google.maps.Size(12, 12),
+                    labelOrigin: new google.maps.Point(12, -10),
+                };
 
+                let pathMarker = new google.maps.Marker({
+                    temp_id: 'path'+path[i].ID,
+                    icon: pathMarkerImg,
+                    position: myLatLng,
+                    map: map,
+                    label: '',
+                    title: path[i].TITLE+"\n"+path[i].ADDED+"\n<#LANG_SPEED#>: "+path[i].SPEED+"\n<#LANG_BATTERY_LEVEL#>: "+path[i].BATTLEVEL,
+                });
 
-    var path=obj.PATH;
-    var points=obj.POINTS;
-    var pathCoordinates = new Array();
-	path.forEach(function (item, i, arr) {
-		var myLatLng = {lat: parseFloat(path[i][0]), lng: parseFloat(path[i][1])};
-		pathCoordinates.push(myLatLng);
-	} );
-	var myPath = new google.maps.Polyline({
-		path: pathCoordinates,
-		geodesic: true,
-		strokeColor: color,
-		strokeOpacity: 0.3,
-		strokeWeight: 4
-	});
-	myPath.setMap(map);
-	map.polylines.push(myPath);
-    zoomToObject(myPath);
-   }
-  });
+                map.markers.push(pathMarker);
+
+            } );
+            var myPath = new google.maps.Polyline({
+                path: pathCoordinates,
+                geodesic: true,
+                strokeColor: color,
+                strokeOpacity: 0.3,
+                strokeWeight: 4
+            });
+            myPath.setMap(map);
+            map.polylines.push(myPath);
+            zoomToObject(myPath);
+        }
+    });
  return false;
 }
-
-
 function createMarker(markerData) {
     let temp_id=markerData.ID;
     let myLatLng = {lat: parseFloat(markerData.LAT), lng: parseFloat(markerData.LON)};
@@ -128,56 +102,44 @@ function createMarker(markerData) {
     });
     return mapMarker;
 }
-
 function updateMarkers() {
- var url="?";
- url+='&ajax=1&op=getmarkers';
- $.ajax({
-   url: url
-  }).done(function(data) { 
-	var obj=jQuery.parseJSON(data);
-	var markers=obj.MARKERS;
-	var markersCnt = markers.length;
-   
-	for(var i=0;i<markersCnt;i++) {
-		var marker=markers[i];
-		var temp_id=marker.ID;
-			if (!checkMarkerExists(temp_id)) {
-				map.markers.push(createMarker(marker));
-			} else {
-				mk=getMarkerIndex(temp_id);
-				var marker_obj=map.markers[mk];
-				var lat = parseFloat(marker.LAT);
-				var lng = parseFloat(marker.LON);
-				var oldLatLng = marker_obj.getPosition();
-				var newLatLng = new google.maps.LatLng(lat, lng);
-				marker_obj.setPosition(newLatLng);
-				if ((oldLatLng.lng()!=newLatLng.lng()) || (oldLatLng.lat()!=newLatLng.lat())) {
-					// marker moved
-					map.setCenter(newLatLng.lat(), newLatLng.lng());
-				}
-			}
-   }
-   updateTimeOut=setTimeout('updateMarkers();', 3000);
-
-  });
- return false;
+    loadMarkers(function () {
+        var markersCnt = markers.length;
+        for(var i=0;i<markersCnt;i++) {
+            var marker=markers[i];
+            var temp_id=marker.ID;
+            if (!checkMarkerExists(temp_id)) {
+                map.markers.push(createMarker(marker));
+            } else {
+                mk=getMarkerIndex(temp_id);
+                var marker_obj=map.markers[mk];
+                var lat = parseFloat(marker.LAT);
+                var lng = parseFloat(marker.LON);
+                var oldLatLng = marker_obj.getPosition();
+                var newLatLng = new google.maps.LatLng(lat, lng);
+                marker_obj.setPosition(newLatLng);
+                if ((oldLatLng.lng()!=newLatLng.lng()) || (oldLatLng.lat()!=newLatLng.lat())) {
+                    // marker moved
+                    map.setCenter(newLatLng.lat(), newLatLng.lng());
+                }
+            }
+        }
+    });
+    clearTimeout(updateTimeOut);
+    updateTimeOut=setTimeout('updateMarkers();', 3000);
+    return false;
 }
-
     var map;
-
     [#if LATEST_LAT!=""#]
     var startLat=[#LATEST_LAT#];
     [#else#]
     var startLat=53.901506;
     [#endif#]
-
     [#if LATEST_LON!=""#]
     var startLon=[#LATEST_LON#];
     [#else#]
     var startLon=27.565269;
     [#endif#]
-    
     $(document).ready(function(){
 		
 	var myLatlng = new google.maps.LatLng(startLat,startLon);
@@ -196,7 +158,7 @@ function updateMarkers() {
         [#endif#]
 	}
 	
-	map = new google.maps.Map(document.getElementById('map'), mapOptions);
+	map = new google.maps.Map(document.getElementById('map<#UNIQ#>'), mapOptions);
 	map.markers = new Array();
 	map.polylines = new Array();
 
@@ -216,32 +178,33 @@ function updateMarkers() {
 	} else { /* Браузер не поддерживает геолокацию */ }
 	[#endif#]
 
-	updateMarkers();
 	resizeMap();
-
-	[#begin DEVICES#]
-	updateRoute([#ID#], '[#COLOR#]');
-	[#end DEVICES#]
 	updateLocations();
+    reloadData();
+
     });
 
+    function reloadData() {
+        markers = [];
+        for(var i=0; i < map.markers.length; i++){
+            map.markers[i].setMap(null);
+        }
+        map.markers = new Array();
 
-function legendClicked(id, color) {
- for (var i=0, marker; marker=map.markers[i]; i++){
-   marker.setMap(null);
-  }
- map.markers = [];
- updateMarkers();
- for (var j=0, polyline; polyline=map.polylines[j]; j++){
-   polyline.setMap(null);
-  }
- map.polylines = [];
- updateRoute(id, color);
- return false;
-}
+        updateMarkers();
+        for(var i=0; i < map.polylines.length; i++){
+            map.polylines[i].setMap(null);
+        }
+        map.polylines = new Array();
+
+        [#begin DEVICES#]
+        [#if ID="<#DEVICE_ID#>" || "<#DEVICE_ID#>"==""#]
+         updateRoute([#ID#], '[#COLOR#]');
+        [#endif#]
+        [#end DEVICES#]
+
+    }
 
 </script>
 
-[#inc action_usual_controls.html#]
-
-<div id="map" style="width: 100%; height: 620px;"></div>
+[#inc action_usual_common.html#]

@@ -42,34 +42,27 @@
 [#begin RESULT#]
 <tr >
 [#if "<#IS_SET_LOCATION_ID#>"!="1"#]
- <td
-   
-   >
+ <td>
    [#LOCATION_TITLE#]
  </td>
 [#endif IS_SET_LOCATION_ID#]
 [#if "<#IS_SET_USER_ID#>"!="1"#]
- <td
-   
-   >
+ <td>
    [#USER_NAME#]
  </td>
 [#endif IS_SET_USER_ID#]
- <td
-   
-   >
+ <td>
   [#if ACTION_TYPE="2"#]<#LANG_GPSTRACK_ACTION_ENTERING_OR_LEAVING#>[#endif#]
   [#if ACTION_TYPE="1"#]<#LANG_GPSTRACK_ACTION_ENTERING#>[#endif#]
   [#if ACTION_TYPE="0"#]<#LANG_GPSTRACK_ACTION_LEAVING#>[#endif#]
  </td>
 [#if "<#IS_SET_SCRIPT_ID#>"!="1"#]
- <td
-   
-   >
+ <td>
   [#if SCRIPT_TITLE!=""#]
    [#SCRIPT_TITLE#]
   [#else#]
-   <#LANG_CODE#>
+   [#if SAY_TEXT!=""#][#SAY_TEXT#][#endif SAY_TEXT#]
+   [#if CODE!=""#]+ <#LANG_CODE#>[#endif#]
   [#endif#]
  </td>
 [#endif IS_SET_SCRIPT_ID#]

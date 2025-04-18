@@ -1,32 +1,26 @@
-<div id="add_controls" class="row">
-    <div class="col-md-10">
-<form class="form-inline" method="get" action="?">
-
-    <div class="form-group">
-        <#LANG_USER#>:
-        </div>
-        <div class="form-group">
-            <select name="device_id" class="form-control input-sm" onchange="zoomToDevice(this.value);">
-                <option value="0"><#LANG_ALL#></option>
-                [#begin DEVICES#]
-                <option value="[#ID#]"[#if ID="<#DEVICE_ID#>"#] selected[#endif#] style="background-color:[#COLOR#]">[#NAME#] ([#TITLE#])</option>
-                [#end DEVICES#]
-            </select>
-        </div>
-                <script language="javascript">
-                    function periodUpdated() {
-                        if ($('#selPeriod').val()=='custom') {
-                            $('#customDates').show();
-                        } else {
-                            $('#customDates').hide();
-                        }
-                        return false;
+<table width="100%">
+    <tr>
+        <td>        <form class="form-inline" method="get" action="?">
+            <div class="form-group">
+                <select name="device_id" class="form-control input-sm" onchange="zoomToDevice(this.value);">
+                    <option value="0"><#LANG_USER#>:</option>
+                    [#begin DEVICES#]
+                    <option value="[#ID#]"[#if ID="<#DEVICE_ID#>"#] selected[#endif#] style="background-color:[#COLOR#]">[#NAME#] ([#TITLE#])</option>
+                    [#end DEVICES#]
+                </select>
+            </div>
+            <script language="javascript">
+                function periodUpdated() {
+                    if ($('#selPeriod').val()=='custom') {
+                        $('#customDates').show();
+                    } else {
+                        $('#customDates').hide();
                     }
-                </script>
+                    return false;
+                }
+            </script>
 
-    <div class="form-group"><#LANG_PERIOD#>:</div>
-
-                    <div class="form-group">
+            <div class="form-group">
                 <select name="period" onChange='periodUpdated();' id='selPeriod' class="form-control input-sm">
                     <option value="today"[#if PERIOD="today"#] selected[#endif#]><#LANG_PERIOD_TODAY#>
                     <option value="day"[#if PERIOD="day"#] selected[#endif#]><#LANG_PERIOD_DAY#>
@@ -34,43 +28,37 @@
                     <option value="month"[#if PERIOD="month"#] selected[#endif#]><#LANG_PERIOD_MONTH#>
                     <option value="custom"[#if PERIOD="custom"#] selected[#endif#]><#LANG_PERIOD_CUSTOM#>...
                 </select>
-                    </div>
- <div class="form-group" id='customDates' [#if PERIOD!="custom"#]style="display:none"[#endif#]>
- <table width="100%" border="0">
-  <tr>
-   <td>
- </td>
- <td>
- <input type="date" name="from" value="[#FROM#]" class="form-control input-sm">
- </td>
- <td>
- -
- </td>
- <td>
- <input type="date" name="to" value="[#TO#]" class="form-control input-sm">
-  </td>
-  </tr>
- </table>
- </div>
-                    <div class="form-group">
+            </div>
+            <div class="form-group" id='customDates' [#if PERIOD!="custom"#]style="display:none"[#endif#]>
+                <table border="0">
+                    <tr>
+                        <td>
+                        </td>
+                        <td>
+                            <input type="date" name="from" value="[#FROM#]" class="form-control input-sm">
+                        </td>
+                        <td>
+                            -
+                        </td>
+                        <td>
+                            <input type="date" name="to" value="[#TO#]" class="form-control input-sm">
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="form-group">
                 <input type="submit" name="Update" value="<#LANG_SEARCH#>" class="btn  btn-default btn-sm">
-                    </div>
+            </div>
 
             <input type="hidden" name="data_source" value="<#DATA_SOURCE#>">
+            <input type="hidden" name="provider" value="<#MAPPROVIDER#>">
         </form>
-</div>
-    <div class="col-md-2">
-        <a href="#" onclick="resetMapZoom();return false;" class="btn btn-default btn-sm">Reset Zoom</a>
-    </div>
-</div>
-&nbsp;
-<!--#
-<table class="table">
-    <tr>
-        [#begin DEVICES#]
-        <td><span style="background-color:[#COLOR#]">&nbsp;&nbsp;</span>
-            <a href="#" onClick="return legendClicked([#ID#], '[#COLOR#]');" class="btn btn-sm">[#NAME#] ([#TITLE#])</a></td>
-        [#end DEVICES#]
+        </td>
+        <td><div id="sliderTimer" style="margin-right:20px;margin-left:20px">HH:MM</div></td>
+        <td width="40%"><div id="timeSlider" style="border:1px solid white"></div></td>
+        <td>&nbsp;&nbsp;&nbsp;</td>
+        <!--#
+        <td align="right"><a href="#" onclick="resetMapZoom();return false;" class="btn btn-default btn-sm">Reset Zoom</a></td>
+        #-->
     </tr>
 </table>
-#-->

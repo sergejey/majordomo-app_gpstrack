@@ -1,0 +1,65 @@
+<script type="text/javascript">
+    let cardTimer<#UNIQ#> = 0;
+    function updateCardData<#UNIQ#>() {
+       clearTimeout(cardTimer<#UNIQ#>);
+        let url="<#ROOTHTML#>ajax/app_gpstrack.html?";
+        url+='&ajax=1&op=getcard&device_id=<#DEVICE_ID#>&user_id=<#USER_ID#>';
+        /*
+        var lat = $('#lat').val();
+        var lon = $('#lon').val();
+        if (lat!='' && lon!='') {
+            url += '&lat='+lat+'&lon='+lon;
+        }
+        */
+        $.ajax({
+            url: url,
+        }).done(function(data) {
+            let obj = jQuery.parseJSON(data);
+            if (typeof obj.TITLE!=='undefined') {
+                $('#card<#UNIQ#>_title').html(obj.TITLE);
+                if (obj.LOCATION!="") {
+                    $('#card<#UNIQ#>_location').show();
+                    $('#card<#UNIQ#>_location').html(obj.LOCATION);
+                } else {
+                    $('#card<#UNIQ#>_location').hide();
+                }
+                $('#card<#UNIQ#>_home_distance').html(obj.HOME_DISTANCE);
+                $('#card<#UNIQ#>_home_direction').css('rotate',obj.HOME_DIRECTION+'deg');
+                //$('#card<#UNIQ#>_home_direction_text').html(obj.HOME_DIRECTION+'deg');
+                $('#card<#UNIQ#>_speed').html(obj.SPEED);
+                if (obj.BATTLEVEL>0) {
+                    $('#card<#UNIQ#>_battlevel_div').show();
+                    $('#card<#UNIQ#>_battlevel').html(obj.BATTLEVEL);
+                } else {
+                    $('#card<#UNIQ#>_battlevel_div').hide();
+                }
+                $('#card<#UNIQ#>_updated').html(obj.UPDATED);
+            }
+        });
+       cardTimer<#UNIQ#> = setTimeout('updateCardData<#UNIQ#>();', 5000);
+    }
+    $(document).ready(function() {
+        updateCardData<#UNIQ#>();
+    });
+
+</script>
+<div style="width: 200px; height:200px; text-align:center;font-size:12px;">
+    <div style="height:60px">
+    <div style="padding:1px;font-weight: bold" id="card<#UNIQ#>_title"></div>
+    <div style="padding:1px" id="card<#UNIQ#>_location" style="display:none"></div>
+    <div style="padding:1px">
+    <i class="glyphicon glyphicon-home"></i> <span id="card<#UNIQ#>_home_distance"></span>
+    <i class="glyphicon glyphicon-arrow-up" id="card<#UNIQ#>_home_direction"></i>
+    <span id="card<#UNIQ#>_speed"></span> Km/h
+    <span id="card<#UNIQ#>_battlevel_div"><i class="glyphicon glyphicon-flash"></i> <span id="card<#UNIQ#>_battlevel"></span>%</span>
+    </div>
+    </div>
+    <div style="height: 100px;align-items:center;display: flex;justify-content: center">
+    [#if AVATAR!=""#]
+    <img src="<#ROOTHTML#>cms/avatars/[#AVATAR#]" class="img-rounded" style="max-height: 100px;max-width: 100px;">
+    [#endif AVATAR#]
+    </div>
+    <div style="height:40px;align-items:center;display: flex;justify-content: center">
+    <div id="card<#UNIQ#>_updated"></div>
+    </div>
+</div>

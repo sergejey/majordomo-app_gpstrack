@@ -1,0 +1,125 @@
+<h2>
+    Testing
+</h2>
+
+<table width="100%">
+    <tr>
+        <td width="50%">
+            [#module name="app_gpstrack" user_id="5" action="card" instance="card"#]
+        </td>
+        <td width="50%">
+
+            [#if API_KEY!="" && MAPPROVIDER=="google"#]
+            <form method="get" class="form-inline">
+                <div class="form-group">
+                    <input type="text" value="" placeholder="Address..." name="address" class="form-control" id="address">
+                </div>
+                <div class="form-group">
+                    <a href="#" class="btn btn-default btn-sm" onclick="return searchCoordinates();"><#LANG_SEARCH#></a>
+                </div>
+                <div class="form-group">
+                    <a href="#" class="btn btn-default btn-sm" onclick="return myPosition();">My Position</a>
+                </div>
+                <div class="form-group">
+                    <input type="text" value="" class="form-control" id="lat">
+                </div>
+                <div class="form-group">
+                    <input type="text" value="" class="form-control" id="lon">
+                </div>
+            </form>
+            <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=[#API_KEY#]&libraries=places"></script>
+            <script src="<#ROOTHTML#>3rdparty/locationpicker/locationpicker.jquery.js"></script>
+            <div id="mapArea" style="width: 100%; height: 400px;"></div>
+
+            <script type="text/javascript">
+
+                function searchCoordinates() {
+                    var geocoder = new google.maps.Geocoder();
+                    var mapContext = $('#mapArea').locationpicker('map');
+                    var address=$('#address').val();
+                    geocoder.geocode( {'address' : address}, function(results, status) {
+                        if (status == google.maps.GeocoderStatus.OK) {
+                            mapContext.map.setCenter(results[0].geometry.location);
+                            console.log(results[0].geometry.location);
+                            $('#lat').val(results[0].geometry.location.lat());
+                            $('#lon').val(results[0].geometry.location.lng());
+                            $('#mapArea').locationpicker(
+                                {
+                                    location: {
+                                        latitude: results[0].geometry.location.lat(),
+                                        longitude: results[0].geometry.location.lng()
+                                    },
+                                    radius: $('#range').val(),
+                                    inputBinding: {
+                                        latitudeInput: $('#lat'),
+                                        longitudeInput: $('#lon'),
+
+                                    },
+                                    enableAutocomplete: true,
+                                    autocompleteOptions: {
+                                        types: ['(cities)'],
+                                        componentRestrictions: {}
+                                    },
+
+                                });
+                        }
+                    });
+                    return false;
+                }
+
+                function myPosition() {
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(function(position) {
+                            var pos = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude
+                            };
+                            var mapContext = $(this).locationpicker('mapArea');
+                            mapContext.map.setCenter(pos);
+                        }, function() {
+                            alert('Error getting position');
+                        });
+                    } else {
+                        alert('Geolocation is not supported');
+                    }
+                    return false;
+                }
+
+
+
+                $(document).ready(function() {
+
+                    //
+
+                    $('#mapArea').locationpicker(
+                        {
+                            [#if LAT!="" && LON!=""#]
+                    location: {
+                        latitude: [#LAT#],
+                        longitude: [#LON#]
+                    },[#endif#]
+
+                    radius: $('#range').val(),
+                        inputBinding: {
+                        latitudeInput: $('#lat'),
+                            longitudeInput: $('#lon'),
+
+                    },
+                    enableAutocomplete: true,
+                        autocompleteOptions: {
+                        types: ['(cities)'],
+                            componentRestrictions: {}
+                    },
+                }
+                );
+
+
+
+                });
+            </script>
+
+            [#endif API_KEY#]
+
+        </td>
+    </tr>
+</table>

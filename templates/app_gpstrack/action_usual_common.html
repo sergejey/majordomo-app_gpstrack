@@ -1,0 +1,6 @@
+[#if ACTION!="track"#]
+[#inc action_usual_controls.html#]
+<div id="map<#UNIQ#>" style="width: 90%; height: 50%;"></div>
+[#else ACTION#]
+<div id="map<#UNIQ#>" style="width: [#WIDTH#]; height: [#HEIGHT#];"></div>
+[#endif ACTION#]

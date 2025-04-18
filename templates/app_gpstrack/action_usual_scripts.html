@@ -1,0 +1,112 @@
+<script type="text/javascript">
+    function resizeMap() {
+        $('#map<#UNIQ#>').css({'height':'75%', 'width':'100%'});
+        return false;
+    }
+
+    let sliderValue = 100;
+    let fromTM = <#FROM_TM#>;
+    let toTM = <#TO_TM#>;
+
+    let markers = [];
+
+    function loadMarkers(loadedCallBack) {
+        let url="?";
+        url+='&ajax=1&op=getmarkers&period=<#PERIOD#>&device_id=<#DEVICE_ID#>&from=<#FROM#>&to=<#TO#>'+'&slider_value='+sliderValue;
+        $.ajax({
+            url: url,
+            async: false
+        }).done(function(data) {
+            let obj = jQuery.parseJSON(data);
+            if (typeof obj.MARKERS!=='undefined') {
+                markers = obj.MARKERS;
+            }
+            loadedCallBack();
+        });
+    }
+
+    function checkMarkerExists(temp_id) {
+        for (var i=0, marker; marker=markers[i]; i++){
+            if (markers.temp_id==temp_id) return true;
+        }
+        return false;
+    }
+
+    function getMarkerIndex(temp_id) {
+        for (let i=0, marker; marker=markers[i]; i++){
+            if (marker.temp_id==temp_id) return i;
+        }
+        return -1;
+    }
+
+    let locations = [];
+    function loadLocations(loadedCallBack) {
+        let url="?";
+        url+='&ajax=1&op=getlocations';
+        $.ajax({
+            url: url,
+            async: false
+        }).done(function(data) {
+            let obj = jQuery.parseJSON(data);
+            if (typeof obj.LOCATIONS!=='undefined') {
+                locations = obj.LOCATIONS;
+            }
+            loadedCallBack();
+        });
+    }
+
+    function loadRoute(device_id, loadedCallBack) {
+        let url="?";
+        url+='&ajax=1&op=getroute&period=<#PERIOD#>&from=<#FROM#>&to=<#TO#>&device_id='+device_id+'&slider_value='+sliderValue;
+        let path = [];
+        $.ajax({
+            url: url,
+            async: false
+        }).done(function(data) {
+            let obj = jQuery.parseJSON(data);
+            if (typeof obj.POINTS!=='undefined') {
+                path = obj.POINTS;
+            }
+            loadedCallBack(path);
+        });
+    }
+
+    function updateSliderTime(value) {
+        let fromT = fromTM;
+        let toT = toTM;
+        if (toT==0) toT = Math.floor(Date.now() / 1000);
+        let diff = toT-fromT;
+        let offset = Math.floor(diff*value/100);
+        let startT = fromT + offset;
+        let date = new Date(startT * 1000);
+        let hours = date.getHours();
+        let minutes = date.getMinutes();
+        if (minutes<10) minutes = '0'+minutes;
+
+        let month = date.getMonth()+1;
+        if (month<10) month = '0'+month;
+        let dt = date.getDate();
+        if (dt<10) dt = '0'+dt;
+
+        $('#sliderTimer').html(dt+'/'+month+' '+hours+':'+minutes);
+    }
+
+    function reloadForSliderTime(value) {
+        sliderValue = value;
+        reloadData();
+    }
+
+    $( function() {
+        $( "#timeSlider" ).slider({min:0, max: 100, value:100,
+            slide: function( event, ui ) {
+                updateSliderTime(ui.value);
+            },
+            change: function( event, ui ) {
+                reloadForSliderTime(ui.value);
+            }});
+
+        updateSliderTime(100);
+
+    } );
+
+</script>

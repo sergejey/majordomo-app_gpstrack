@@ -106,6 +106,8 @@ class app_gpstrack extends module
         $out = array();
         if ($this->action == 'admin') {
             $this->admin($out);
+        } elseif ($this->action == 'card') {
+            $device_data = $this->card($out);
         } else {
             $this->usual($out);
         }
@@ -189,6 +191,10 @@ class app_gpstrack extends module
         if ($this->data_source == 'preview' || gr('ajax') || $this->ajax) {
             $this->usual($out);
             return;
+        }
+
+        if ($this->data_source == 'widgets') {
+            $this->widgets($out);
         }
 
         if (isset($this->data_source) && !$_GET['data_source'] && !$_POST['data_source']) {
@@ -275,11 +281,64 @@ class app_gpstrack extends module
     function usual(&$out)
     {
         $this->getConfig();
-        $out['MAPPROVIDER'] = $this->config['MAPPROVIDER'];
+        $provider = gr('provider');
+        if (!$provider) {
+            $provider = $this->config['MAPPROVIDER'];
+        }
+        $out['MAPPROVIDER'] = $provider;
+
         $out['MAPTYPE'] = $this->config['MAPTYPE'];
         $out['MAX_ACCURACY'] = $this->config['MAX_ACCURACY'];
         $out['API_KEY'] = $this->config['API_KEY'];
         require(DIR_MODULES . $this->name . '/usual.inc.php');
+    }
+
+    function card(&$out)
+    {
+        $out['UNIQ'] = uniqid('gpscard');
+        $qry = "1";
+        if (gr('device_id')) {
+            $this->device_id = gr('device_id');
+        }
+        if ($this->device_id) {
+            $qry .= " AND gpsdevices.ID=" . (int)$this->device_id;
+        }
+        if (gr('user_id')) {
+            $this->user_id = gr('user_id');
+        }
+        if ($this->user_id) {
+            $qry .= " AND gpsdevices.USER_ID=" . (int)$this->user_id;
+        }
+        $device = SQLSelectOne("SELECT gpsdevices.*, users.NAME, users.AVATAR, users.LINKED_OBJECT  FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE $qry ORDER BY TITLE");
+        $lat = gr('lat');
+        $lon = gr('lon');
+        if ($lat && $lon) {
+            $home_location = SQLSelectOne("SELECT * FROM gpslocations WHERE IS_HOME=1");
+            $device['HOME_DISTANCE'] = $this->calculateTheDistance($lat, $lon, $home_location['LAT'], $home_location['LON']);
+            $device['HOME_DIRECTION'] = $this->getBearing($lat, $lon, $home_location['LAT'], $home_location['LON']);
+        }
+        if ($device['NAME'] != '') $device['TITLE'] = $device['NAME'];
+        if ($device['HOME_DISTANCE'] > 100) {
+            $device['HOME_DISTANCE'] = round($device['HOME_DISTANCE'] / 1000, 1) . ' Km';
+        } else {
+            $device['HOME_DISTANCE'] = $device['HOME_DISTANCE'] . ' m';
+        }
+        $device['UPDATED'] = getPassedText(strtotime($device['UPDATED']));
+        foreach ($device as $k => $v) {
+            $out[$k] = $v;
+        }
+        return $device;
+    }
+
+    function processIncomingLogData()
+    {
+        include_once DIR_MODULES . $this->name . '/gpslog_process.inc.php';
+    }
+
+    function widgets(&$out)
+    {
+        $out['USERS'] = SQLSelect("SELECT users.ID, users.NAME FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID WHERE users.NAME!='' ORDER BY users.NAME");
+        $out['DEVICES'] = SQLSelect("SELECT gpsdevices.*, users.NAME, users.AVATAR, users.LINKED_OBJECT FROM gpsdevices LEFT JOIN users ON gpsdevices.USER_ID=users.ID ORDER BY TITLE");
     }
 
     /**
@@ -575,7 +634,7 @@ class app_gpstrack extends module
      */
     function calculateTheDistance($latA, $lonA, $latB, $lonB)
     {
-		if (!defined('EARTH_RADIUS')) define('EARTH_RADIUS', 6372795);
+        if (!defined('EARTH_RADIUS')) define('EARTH_RADIUS', 6372795);
 
         $lat1 = $latA * M_PI / 180;
         $lat2 = $latB * M_PI / 180;
@@ -601,7 +660,18 @@ class app_gpstrack extends module
         return $dist;
     }
 
-    function getNearestLogPoint($lat, $lon, $maxDistance = 50, $query = "1") {
+    function getBearing($lat1, $lon1, $lat2, $lon2)
+    {
+        $dx = $lat1 - $lat2;
+        $dy = $lon1 - $lon2;
+        $radians = atan2($dy, $dx);
+        $degrees = round($radians * 180 / pi());
+        //if ($degrees<0) $degrees = 360+$degrees;
+        return $degrees;
+    }
+
+    function getNearestLogPoint($lat, $lon, $maxDistance = 50, $query = "1")
+    {
 
         if (!$this->checkSTDistanceFunctionExists()) {
             return array();
@@ -615,7 +685,8 @@ class app_gpstrack extends module
 
     }
 
-    function checkSTDistanceFunctionExists() {
+    function checkSTDistanceFunctionExists()
+    {
         $tmp = SQLSelectOne("HELP ST_Distance_Sphere;");
         return isset($tmp['name']);
     }
@@ -723,6 +794,10 @@ class app_gpstrack extends module
  gpsdevices: DEVICEID varchar(255) NOT NULL DEFAULT ''
  gpsdevices: TOKEN varchar(255) NOT NULL DEFAULT ''
  gpsdevices: HOME_DISTANCE int(10) NOT NULL DEFAULT '0'
+ gpsdevices: HOME_DIRECTION int(10) NOT NULL DEFAULT '0'
+ gpsdevices: LOCATION varchar(255) NOT NULL DEFAULT ''
+ gpsdevices: SPEED float DEFAULT '0' NOT NULL
+ gpsdevices: BATTLEVEL int(3) NOT NULL DEFAULT '0'
  gpsdevices: INDEX (USER_ID)
 
  gpsactions: ID int(10) unsigned NOT NULL auto_increment
@@ -730,6 +805,8 @@ class app_gpstrack extends module
  gpsactions: USER_ID int(10) NOT NULL DEFAULT '0'
  gpsactions: ACTION_TYPE int(255) NOT NULL DEFAULT '0'
  gpsactions: SCRIPT_ID int(10) NOT NULL DEFAULT '0'
+ gpsactions: SAY_LEVEL int(10) NOT NULL DEFAULT '0'
+ gpsactions: SAY_TEXT varchar(255) NOT NULL DEFAULT ''
  gpsactions: CODE text
  gpsactions: LOG text
  gpsactions: EXECUTED datetime

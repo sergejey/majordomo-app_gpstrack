@@ -36,10 +36,10 @@
 <!-- LOCATION_ID (select) -->
 [#if !IS_SET_LOCATION_ID#]
 <div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_LOCATION#>:<font color="red">*</font></label>
+        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_LOCATION#>:</label>
         <div class="col-lg-5">
 			<select name="location_id" class="form-control [#if ERR_LOCATION_ID#]alert-danger[#endif#]">
-			  <option value=""><#LANG_SELECT#>
+			  <option value="0"><#LANG_ANY_LOCATION#>
 			  [#begin LOCATION_ID_OPTIONS#]<option value="[#ID#]"[#if SELECTED#] selected[#endif#]>[#TITLE#]
 			  [#end LOCATION_ID_OPTIONS#]
 			 </select>
@@ -50,10 +50,10 @@
 <!-- USER_ID (select) -->
 [#if !IS_SET_USER_ID#]
 <div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_USER#>:<font color="red">*</font></label>
+        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_USER#>:</label>
         <div class="col-lg-5">
 			<select name="user_id" class="form-control [#if ERR_USER_ID#]alert-danger[#endif#]">
-			 <option value=""><#LANG_SELECT#>
+			 <option value="0"><#LANG_ANY_USER#>
   [#begin USER_ID_OPTIONS#]<option value="[#ID#]"[#if SELECTED#] selected[#endif#]>[#NAME#]
   [#end USER_ID_OPTIONS#]
 			 </select>
@@ -75,23 +75,38 @@
 		</div>
 </div>
 
+	<div class="form-group ">
+		<label class="col-lg-4 control-label"><#LANG_SHOUTBOX_MESSAGE#>:</label>
+		<div class="col-lg-5">
+			<input type="text" name="say_text" value="[#SAY_TEXT#]" class="form-control">
+			<div class="help-block">You can use %USER% or %LOCATION% in the message.</div>
+		</div>
+	</div>
+
+	<div class="form-group ">
+		<label class="col-lg-4 control-label"><#LANG_MIN_MSG_LEVEL#>:</label>
+		<div class="col-lg-5">
+			<input type="text" name="say_level" value="[#SAY_LEVEL#]" class="form-control">
+		</div>
+	</div>
+
+
 
 [#if ID!=""#]
 <!-- SCRIPT_ID (select) -->
 [#if !IS_SET_SCRIPT_ID#]
 <div class="form-group ">
-        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_SCRIPT#>:<font color="red">*</font></label>
+        <label class="col-lg-4 control-label" for="inputTitle"><#LANG_SCRIPT#>:</label>
         <div class="col-lg-5">
 			<select name="script_id" class="form-control [#if ERR_SCRIPT_ID#]alert-danger[#endif#]">
 			<option value=""><#LANG_SELECT#>
   [#begin SCRIPT_ID_OPTIONS#]<option value="[#ID#]"[#if SELECTED#] selected[#endif#]>[#TITLE#]
   [#end SCRIPT_ID_OPTIONS#]
 			 </select>
-		
 		</div>
 </div>
-
 [#endif IS_SET_SCRIPT_ID#]
+
 <!-- CODE (text) -->
 <div class="form-group ">
         <label class="col-lg-4 control-label" for="inputTitle"><#LANG_CODE#>:</label>
