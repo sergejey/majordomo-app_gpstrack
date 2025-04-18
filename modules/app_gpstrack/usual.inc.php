@@ -121,9 +121,11 @@ if ($ajax) {
             if (isset($latest_point['ID'])) {
                 $out['DEVICES'][$i]['LAT'] = $latest_point['LAT'];
                 $out['DEVICES'][$i]['LON'] = $latest_point['LON'];
+                $out['DEVICES'][$i]['LATEST_LAT'] = $latest_point['LAT'];
+                $out['DEVICES'][$i]['LATEST_LON'] = $latest_point['LON'];
+            } else {
+
             }
-            $out['DEVICES'][$i]['LATEST_LAT'] = $latest_point['LAT'];
-            $out['DEVICES'][$i]['LATEST_LON'] = $latest_point['LON'];
         }
 
         $data = array();

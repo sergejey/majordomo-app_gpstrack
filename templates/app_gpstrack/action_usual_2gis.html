@@ -33,7 +33,8 @@
                 path.forEach(function (item, i, arr) {
                     var mapMarker = DG.marker([parseFloat(item.LAT), parseFloat(item.LON)], {
                         icon: DG.icon(
-                            { iconUrl: '../templates/app_gpstrack/img/gps.png',
+                            { iconUrl: '<#ROOTHTML#>modules/app_gpstrack/marker.php?color='+encodeURIComponent(color)+'&direction='+encodeURIComponent(item.ANGLE),
+                                    //'../templates/app_gpstrack/img/gps.png',
                                 iconSize: [15, 15],
                                 iconAnchor: [8, 8]
                             }),
@@ -65,41 +66,49 @@
 
         return false;
     }
+
+function findMarkerOnMap(temp_id) {
+    for (var i = 0; i < map.markers.length; i++) {
+        if (map.markers[i].options.label == temp_id) {
+            return i;
+        }
+    }
+    return -1;
+}
 function updateMarkers() {
     loadMarkers(function () {
         var markersCnt = markers.length;
         for (var i = 0; i < markersCnt; i++) {
             var marker = markers[i];
             var temp_id = marker.ID;
-            //console.log(marker);
-            if (getMarkerIndex(temp_id)==-1) {
+            var markerIndex = findMarkerOnMap(temp_id);
+            if (markerIndex==-1) {
                 console.log('new marker',marker);
                 let mapMarker;
-                if (marker.AVATAR!=""){
+                if (marker.AVATAR!="" && marker.AVATAR!=null) {
                     var icon = DG.icon({ iconUrl: '<#ROOTHTML#>cms/avatars/'+marker.AVATAR, iconSize: [40, 40] })
                     mapMarker = DG.marker([parseFloat(marker.LAT), parseFloat(marker.LON)], {
                         icon: icon,
-                        alt: marker.HTML
+                        alt: marker.HTML,
+                        label: marker.ID
                     }).addTo(map).bindPopup(marker.HTML).bindLabel(marker.NAME);
                 }
                 else {
                     mapMarker = DG.marker([parseFloat(marker.LAT), parseFloat(marker.LON)], {
-                        alt: marker.HTML
+                        alt: marker.HTML,
+                        label: marker.ID
                     }).addTo(map).bindPopup(marker.HTML).bindLabel(marker.NAME);
                 }
-                map.markers.push([temp_id,mapMarker]);
+                map.markers.push(mapMarker);
             } else {
-                var mk = getMarkerIndex(temp_id);
-                var marker_obj = markers[mk][1];
+                var marker_obj = map.markers[markerIndex];
                 var lat = parseFloat(marker.LAT);
                 var lng = parseFloat(marker.LON);
                 var oldLatLng = marker_obj.getLatLng();
                 var newLatLng = DG.latLng(lat, lng);
                 marker_obj.setLatLng(newLatLng);
                 if ((oldLatLng.lng != newLatLng.lng) || (oldLatLng.lat != newLatLng.lat)) {
-                    // marker moved
                     map.flyTo(newLatLng);
-                    //console.log("maker fly");
                 }
             }
         }
@@ -127,44 +136,57 @@ function updateMarkers() {
             zoom: 13,
             geoclicker: true
         });
-        map.markers = new Array() //DG.featureGroup()
-        map.location = new Array() //DG.featureGroup()
-        map.polylines = new Array();
-        
+
         DG.control.location({position: 'bottomright'}).addTo(map);
         DG.control.scale().addTo(map);
         DG.control.ruler({position: 'bottomleft'}).addTo(map);
         DG.control.traffic().addTo(map);
 
-        legendUpdate();
+        map.markers = [];
+        map.polylines = [];
+
+        updateLocations();
+        reloadData();
         resizeMap();
         map.invalidateSize();
     });
 
-    function legendUpdate() {
-        for (var i = 0, marker; marker = map.markers[i]; i++) {
-            marker.remove();
+    function reloadData() {
+        //map.markers = new Array() //DG.featureGroup()
+        //map.location = new Array() //DG.featureGroup()
+        //map.polylines = new Array();
+
+        if (typeof map.markers != 'undefined') {
+            for (var i = 0; i < map.markers.length; i++) {
+                map.markers[i].remove();
+            }
+            map.markers = [];
         }
-        map.markers = [];
-        for (var j = 0, polyline; polyline = map.polylines[j]; j++) {
-            polyline.remove();
+
+        if (typeof map.polylines != 'undefined') {
+            for (var i = 0; i < map.polylines.length; i++) {
+                map.polylines[i].remove();
+            }
+            map.polylines = [];
         }
-        map.polylines = [];
-        
-        updateLocations();
+
         updateMarkers();
-        console.log('[#DEVICE_ID#]')
+
         [#if DEVICE_ID!=""#]
-         [#begin DEVICES#]
-            [#if ID="<#DEVICE_ID#>"#]
-            updateRoute([#ID#], '[#COLOR#]');
-            [#endif ID#]
-         [#end DEVICES#]
+        [#begin DEVICES#]
+        [#if ID="<#DEVICE_ID#>"#]
+        updateRoute([#ID#], '[#COLOR#]');
+        [#endif ID#]
+        [#end DEVICES#]
         [#else DEVICE_ID#]
-         [#begin DEVICES#]
-            updateRoute([#ID#], '[#COLOR#]');
-         [#end DEVICES#]
-        [#endif DEVICE_ID#] 
+        [#begin DEVICES#]
+        updateRoute([#ID#], '[#COLOR#]');
+        [#end DEVICES#]
+        [#endif DEVICE_ID#]
+
+    }
+
+    function legendUpdate() {
         return false;
     }
 
