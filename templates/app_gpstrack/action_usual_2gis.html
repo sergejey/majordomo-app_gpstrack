@@ -134,7 +134,8 @@ function updateMarkers() {
         map = DG.map('map<#UNIQ#>', {
             center: [startLat, startLon],
             zoom: 13,
-            geoclicker: true
+            geoclicker: true,
+            [#if "<#API_KEY#>"!=""#]key: '<#API_KEY#>',[#endif#]
         });
 
         DG.control.location({position: 'bottomright'}).addTo(map);
