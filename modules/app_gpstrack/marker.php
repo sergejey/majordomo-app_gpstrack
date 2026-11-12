@@ -1,7 +1,7 @@
 <?php
 
-$color = $_GET['color'];
-$direction = $_GET['direction'];
+$color = isset($_GET['color']) ? $_GET['color'] : '';
+$direction = isset($_GET['direction']) ? $_GET['direction'] : '';
 if (!$color) {
     $color = '#ff0000';
 }
